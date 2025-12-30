@@ -1,372 +1,307 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Download, MoveVertical, Trash2, Layout, Eye, Settings, FileCode, Mail, User, Send } from 'lucide-react';
-
-const CM_TO_PX = 37.8; // 1cm ≈ 37.8px (at 96DPI)
-
-const App = () => {
-  const [images, setImages] = useState([]);
-  const [targetWidthCm, setTargetWidthCm] = useState(15);
-  const [isExporting, setIsExporting] = useState(false);
-  
-  const [mailInfo, setMailInfo] = useState({
-    to: '',
-    cc: '',
-    bcc: '',
-    subject: 'Outlook EDM 邮件'
-  });
-
-  const dragItem = useRef(null);
-  const dragOverItem = useRef(null);
-
-  // 工具函数：安全地将非 ASCII 字符串转换为邮件头编码格式 (RFC 2047)
-  const encodeHeader = (str) => {
-    if (!str) return '';
-    if (/^[\x00-\x7F]*$/.test(str)) return str;
-    return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
-  };
-
-  // 工具函数：将超长 Base64 字符串按 76 字符换行
-  const wrapBase64 = (str) => {
-    if (!str) return '';
-    return str.match(/.{1,76}/g)?.join("\r\n") || str;
-  };
-
-  const getFileNumber = (name) => {
-    const match = name.match(/\d+/);
-    return match ? parseInt(match[0], 10) : 999;
-  };
-
-  const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    const promises = files.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            const safeName = file.name.replace(/[^a-zA-Z0-9]/g, '_');
-            resolve({
-              id: Math.random().toString(36).substr(2, 9),
-              file: file,
-              name: file.name,
-              cid: `${safeName}_${Math.random().toString(36).substr(2, 5)}@edm.maker`,
-              preview: event.target.result,
-              width: img.width,
-              height: img.height,
-              aspectRatio: img.height / img.width,
-              order: getFileNumber(file.name)
-            });
-          };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(promises).then(newResolvedImages => {
-      setImages(prev => {
-        const combined = [...prev, ...newResolvedImages];
-        return combined.sort((a, b) => a.order - b.order);
-      });
-    });
-    e.target.value = '';
-  };
-
-  const removeImage = (id) => {
-    setImages(images.filter(img => img.id !== id));
-  };
-
-  const dragStart = (e, position) => {
-    dragItem.current = position;
-  };
-
-  const dragEnter = (e, position) => {
-    dragOverItem.current = position;
-  };
-
-  const drop = () => {
-    if (dragItem.current === null || dragOverItem.current === null) return;
-    const copyListItems = [...images];
-    const dragItemContent = copyListItems[dragItem.current];
-    copyListItems.splice(dragItem.current, 1);
-    copyListItems.splice(dragOverItem.current, 0, dragItemContent);
-    dragItem.current = null;
-    dragOverItem.current = null;
-    setImages(copyListItems);
-  };
-
-  // 纯粹的图片表格生成逻辑
-  const generateTableContent = (isForPreview = false) => {
-    const targetWidthPx = Math.round(targetWidthCm * CM_TO_PX);
-    
-    const rows = images.map(img => {
-      const rowHeight = Math.round(targetWidthPx * img.aspectRatio);
-      return `
-        <tr>
-          <td align="center" valign="top" style="padding: 0; margin: 0; line-height: 0px; font-size: 0px; mso-line-height-rule: exactly; border: 0; text-align: center;">
-            <img 
-              src="${isForPreview ? img.preview : 'cid:' + img.cid}" 
-              width="${targetWidthPx}" 
-              height="${rowHeight}" 
-              alt="${img.name}" 
-              style="display: block; width: ${targetWidthPx}px; height: ${rowHeight}px; border: 0; padding: 0; margin: 0 auto; vertical-align: top; outline: none; text-decoration: none;"
-            />
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    return `
-      <table border="0" cellpadding="0" cellspacing="0" width="${targetWidthPx}" align="center" style="width: ${targetWidthPx}px; border-collapse: collapse; margin: 0 auto; table-layout: fixed; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 0; mso-padding-alt: 0px;">
-        ${rows}
-      </table>
-    `;
-  };
-
-  const generateFullHTML = () => {
-    const tableHTML = generateTableContent(false);
-    // 模拟三次回车的效果 (使用 Outlook 默认的字号和行高)
-    const spacers = '<div style="font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.2;">&nbsp;</div>'.repeat(3);
-    
-    return `
-      <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-      <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-      <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>${mailInfo.subject}</title>
-        <!--[if gte mso 9]>
-        <xml>
-          <o:OfficeDocumentSettings>
-            <o:AllowPNG/>
-            <o:PixelsPerInch>96</o:PixelsPerInch>
-          </o:OfficeDocumentSettings>
-        </xml>
-        <![endif]-->
-        <style type="text/css">
-          table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 0; }
-          img { display: block; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 0; }
-          body { margin: 0; padding: 0; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; background-color: #ffffff; }
-          td { mso-line-height-rule: exactly; padding: 0; }
-        </style>
-      </head>
-      <body style="margin: 0; padding: 0; background-color: #ffffff; width: 100% !important;">
-        ${spacers}
-        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100% !important; table-layout: fixed;">
-          <tr>
-            <td align="center" valign="top" style="padding: 0; font-size: 0px; line-height: 0px; mso-line-height-rule: exactly;">
-              ${tableHTML}
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `;
-  };
-
-  const exportAsEML = () => {
-    if (images.length === 0) return;
-    setIsExporting(true);
-    
-    try {
-      const htmlContent = generateFullHTML();
-      const encodedHTML = wrapBase64(btoa(unescape(encodeURIComponent(htmlContent))));
-      const boundary = "boundary_edm_" + Math.random().toString(36).substr(2, 9);
-      const dateStr = new Date().toUTCString();
-      const messageId = `<${Date.now()}@edm.maker>`;
-      
-      let emlParts = [
-        `To: ${encodeHeader(mailInfo.to)}`,
-        `Cc: ${encodeHeader(mailInfo.cc)}`,
-        `Bcc: ${encodeHeader(mailInfo.bcc)}`,
-        `Subject: ${encodeHeader(mailInfo.subject)}`,
-        `Date: ${dateStr}`,
-        `Message-ID: ${messageId}`,
-        "MIME-Version: 1.0",
-        `Content-Type: multipart/related; boundary="${boundary}"; type="text/html"`,
-        "X-Unsent: 1",
-        "",
-        `--${boundary}`,
-        "Content-Type: text/html; charset=UTF-8",
-        "Content-Transfer-Encoding: base64",
-        "",
-        encodedHTML,
-        ""
-      ];
-
-      images.forEach(img => {
-        if (img.preview && img.preview.includes(',')) {
-          const rawBase64 = img.preview.split(',')[1];
-          const formattedBase64 = wrapBase64(rawBase64);
-          
-          emlParts.push(`--${boundary}`);
-          emlParts.push(`Content-Type: ${img.file.type || 'image/jpeg'}`);
-          emlParts.push("Content-Transfer-Encoding: base64");
-          emlParts.push(`Content-ID: <${img.cid}>`);
-          emlParts.push(`Content-Disposition: inline; filename="${encodeHeader(img.name)}"`);
-          emlParts.push("");
-          emlParts.push(formattedBase64);
-          emlParts.push("");
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outlook EDM 制作专家</title>
+    <!-- 加载 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 加载 React 核心库 -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 加载 Babel 用于在线解析 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .preview-body { background-color: #ffffff; line-height: normal; }
+        .preview-canvas {
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            background: white;
         }
-      });
+        /* 强制消除预览中的图片间隙 */
+        .edm-table td { line-height: 0; font-size: 0; }
+        .edm-table img { display: block; vertical-align: top; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+    <div id="root"></div>
 
-      emlParts.push(`--${boundary}--`);
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
 
-      const blob = new Blob([emlParts.join("\r\n")], { type: 'message/rfc822' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${mailInfo.subject || 'Outlook_EDM'}.eml`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error("导出失败:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  };
+        // 内联 SVG 图标组件，修复相邻 JSX 元素报错问题
+        const Icon = ({ name, size = 18, className = "" }) => {
+            const icons = {
+                Upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>,
+                Download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>,
+                MoveVertical: <path d="m8 18 4 4 4-4M8 6l4-4 4 4M12 2v20"/>,
+                Trash2: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/>,
+                Layout: <path d="M3 3h18v18H3zM3 9h18M9 21V9"/>,
+                Eye: <React.Fragment><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></React.Fragment>,
+                Settings: <React.Fragment><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></React.Fragment>,
+                Mail: <React.Fragment><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></React.Fragment>,
+                Send: <React.Fragment><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></React.Fragment>
+            };
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {icons[name] || null}
+                </svg>
+            );
+        };
 
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-2">
-              <Layout className="text-blue-600" />
-              Outlook EDM 制作专家
-            </h1>
-            <p className="text-slate-500 mt-1">模拟邮件正文首行回车，居中插入图片表格</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={exportAsEML}
-              disabled={images.length === 0 || isExporting}
-              className={`flex items-center gap-2 px-8 py-4 rounded-xl font-bold shadow-xl transition-all ${
-                images.length === 0 
-                ? 'bg-slate-300 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:-translate-y-1 active:scale-95'
-              }`}
-            >
-              <Send size={20} />
-              {isExporting ? '处理中...' : '导出并准备发送'}
-            </button>
-          </div>
-        </header>
+        const App = () => {
+            const [images, setImages] = useState([]);
+            const [targetWidthCm, setTargetWidthCm] = useState(15);
+            const [isExporting, setIsExporting] = useState(false);
+            const [mailInfo, setMailInfo] = useState({ to: '', cc: '', bcc: '', subject: 'Outlook EDM 邮件' });
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-4 space-y-6">
-            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 ring-1 ring-blue-50">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Mail size={18} className="text-blue-500" />
-                邮件主题设置
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">邮件主题</label>
-                  <input 
-                    type="text" 
-                    value={mailInfo.subject}
-                    onChange={(e) => setMailInfo({...mailInfo, subject: e.target.value})}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-              </div>
-            </section>
+            const dragItem = useRef(null);
+            const dragOverItem = useRef(null);
 
-            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Settings size={18} className="text-slate-400" />
-                图片尺寸设置
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-2">图片显示宽度 (cm)</label>
-                  <input 
-                    type="number" 
-                    value={targetWidthCm}
-                    onChange={(e) => setTargetWidthCm(parseFloat(e.target.value) || 0)}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  />
-                </div>
-              </div>
-            </section>
+            const CM_TO_PX = 37.8; 
 
-            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Upload size={18} className="text-slate-400" />
-                素材上传
-              </h2>
-              <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 text-center hover:border-blue-400 transition-colors cursor-pointer relative">
-                <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
-                <div className="flex flex-col items-center pointer-events-none">
-                  <Upload size={24} className="text-blue-500 mb-2" />
-                  <p className="text-sm font-semibold">上传切片图片</p>
-                </div>
-              </div>
-            </section>
+            const encodeHeader = (str) => {
+                if (!str) return '';
+                if (/^[\x00-\x7F]*$/.test(str)) return str;
+                return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+            };
 
-            {images.length > 0 && (
-              <section className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">切片排序列表</h3>
-                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                  {images.map((img, index) => (
-                    <div 
-                      key={img.id} draggable onDragStart={(e) => dragStart(e, index)} onDragEnter={(e) => dragEnter(e, index)} onDragEnd={drop} onDragOver={(e) => e.preventDefault()}
-                      className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-transparent hover:border-blue-200 cursor-move group"
-                    >
-                      <MoveVertical size={14} className="text-slate-300" />
-                      <div className="w-10 h-10 rounded bg-white border border-slate-200 overflow-hidden flex-shrink-0">
-                        <img src={img.preview} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate">{img.name}</p></div>
-                      <button onClick={() => removeImage(img.id)} className="p-1.5 text-slate-300 hover:text-red-500 transition-all"><Trash2 size={14} /></button>
+            const wrapBase64 = (str) => {
+                if (!str) return '';
+                return str.match(/.{1,76}/g)?.join("\r\n") || str;
+            };
+
+            const getFileNumber = (name) => {
+                const match = name.match(/\d+/);
+                return match ? parseInt(match[0], 10) : 999;
+            };
+
+            const handleFileUpload = (e) => {
+                const files = Array.from(e.target.files);
+                if (files.length === 0) return;
+
+                const promises = files.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const safeName = file.name.replace(/[^a-zA-Z0-9]/g, '_');
+                                resolve({
+                                    id: Math.random().toString(36).substr(2, 9),
+                                    file: file,
+                                    name: file.name,
+                                    cid: `${safeName}_${Math.random().toString(36).substr(2, 5)}@edm.maker`,
+                                    preview: event.target.result,
+                                    width: img.width,
+                                    height: img.height,
+                                    aspectRatio: img.height / img.width,
+                                    order: getFileNumber(file.name)
+                                });
+                            };
+                            img.src = event.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                Promise.all(promises).then(newResolvedImages => {
+                    setImages(prev => [...prev, ...newResolvedImages].sort((a, b) => a.order - b.order));
+                });
+                e.target.value = '';
+            };
+
+            const removeImage = (id) => setImages(images.filter(img => img.id !== id));
+
+            const dragStart = (e, position) => { dragItem.current = position; };
+            const dragEnter = (e, position) => { dragOverItem.current = position; };
+            const drop = () => {
+                if (dragItem.current === null || dragOverItem.current === null) return;
+                const copyListItems = [...images];
+                const dragItemContent = copyListItems[dragItem.current];
+                copyListItems.splice(dragItem.current, 1);
+                copyListItems.splice(dragOverItem.current, 0, dragItemContent);
+                dragItem.current = null;
+                dragOverItem.current = null;
+                setImages(copyListItems);
+            };
+
+            // 彻底消除切片白边
+            const generateTableContent = (isForPreview = false) => {
+                const targetWidthPx = Math.round(targetWidthCm * CM_TO_PX);
+                const rows = images.map(img => {
+                    const rowHeight = Math.round(targetWidthPx * img.aspectRatio);
+                    // 关键修复：在一行内输出 td 和 img，不留任何空格或换行
+                    return `<tr><td align="center" valign="top" style="padding: 0; margin: 0; line-height: 0px; font-size: 0px; mso-line-height-rule: exactly; border: 0; text-align: center;"><img src="${isForPreview ? img.preview : 'cid:' + img.cid}" width="${targetWidthPx}" height="${rowHeight}" alt="${img.name}" style="display: block; width: ${targetWidthPx}px; height: ${rowHeight}px; border: 0; padding: 0; margin: 0 auto; vertical-align: top; outline: none; text-decoration: none;" /></td></tr>`;
+                }).join('');
+
+                return `<table border="0" cellpadding="0" cellspacing="0" width="${targetWidthPx}" align="center" style="width: ${targetWidthPx}px; border-collapse: collapse; margin: 0 auto; table-layout: fixed; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 0; mso-padding-alt: 0px;">${rows}</table>`;
+            };
+
+            const generateFullHTML = () => {
+                const tableHTML = generateTableContent(false);
+                const spacers = '<div style="font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.2; margin: 0; padding: 0;">&nbsp;</div>'.repeat(3);
+                return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style type="text/css">
+table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 0; }
+img { display: block; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 0; }
+body { margin: 0; padding: 0; width: 100% !important; background-color: #ffffff; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+td { mso-line-height-rule: exactly; padding: 0; }
+</style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff; width: 100% !important;">
+${spacers}
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; width: 100% !important; border-spacing: 0;">
+<tr><td align="center" valign="top" style="padding: 0; font-size: 0px; line-height: 0px; mso-line-height-rule: exactly;">${tableHTML}</td></tr>
+</table>
+</body>
+</html>`;
+            };
+
+            const exportAsEML = () => {
+                if (images.length === 0) return;
+                setIsExporting(true);
+                try {
+                    const htmlContent = generateFullHTML();
+                    const encodedHTML = wrapBase64(btoa(unescape(encodeURIComponent(htmlContent))));
+                    const boundary = "boundary_" + Math.random().toString(36).substr(2, 9);
+                    const messageId = `<${Date.now()}@edm.maker>`;
+                    
+                    const emlParts = [
+                        `To: ${encodeHeader(mailInfo.to)}`,
+                        `Cc: ${encodeHeader(mailInfo.cc)}`,
+                        `Bcc: ${encodeHeader(mailInfo.bcc)}`,
+                        `Subject: ${encodeHeader(mailInfo.subject)}`,
+                        `Message-ID: ${messageId}`,
+                        "MIME-Version: 1.0",
+                        `Content-Type: multipart/related; boundary="${boundary}"; type="text/html"`,
+                        "X-Unsent: 1", 
+                        "",
+                        `--${boundary}`,
+                        "Content-Type: text/html; charset=UTF-8",
+                        "Content-Transfer-Encoding: base64", 
+                        "",
+                        encodedHTML, 
+                        ""
+                    ];
+
+                    images.forEach(img => {
+                        const rawBase64 = img.preview.split(',')[1];
+                        emlParts.push(`--${boundary}`);
+                        emlParts.push(`Content-Type: ${img.file.type || 'image/jpeg'}`);
+                        emlParts.push("Content-Transfer-Encoding: base64");
+                        emlParts.push(`Content-ID: <${img.cid}>`);
+                        emlParts.push(`Content-Disposition: inline; filename="${encodeHeader(img.name)}"`);
+                        emlParts.push("");
+                        emlParts.push(wrapBase64(rawBase64));
+                        emlParts.push("");
+                    });
+                    emlParts.push(`--${boundary}--`);
+
+                    const blob = new Blob([emlParts.join("\r\n")], { type: 'message/rfc822' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; 
+                    a.download = `${mailInfo.subject || 'Outlook_EDM'}.eml`; 
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } catch (err) {
+                    console.error("Export error:", err);
+                } finally { 
+                    setIsExporting(false); 
+                }
+            };
+
+            return (
+                <div className="p-4 md:p-8 max-w-7xl mx-auto">
+                    <header className="flex flex-col md:flex-row justify-between gap-4 mb-8">
+                        <div>
+                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> Outlook EDM 制作专家</h1>
+                            <p className="text-slate-500 mt-1 text-sm">已修复启动报错与切片缝隙，模拟首行三次回车居中布局</p>
+                        </div>
+                        <button onClick={exportAsEML} disabled={images.length === 0 || isExporting} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                            <Icon name="Send" size={20}/> {isExporting ? '处理中...' : '导出并准备发送'}
+                        </button>
+                    </header>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-4 space-y-6">
+                            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Mail" className="text-blue-500"/> 邮件主题设置</h2>
+                                <input type="text" value={mailInfo.subject} onChange={(e) => setMailInfo({...mailInfo, subject: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="输入邮件主题"/>
+                            </section>
+
+                            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Settings" className="text-slate-400"/> 尺寸设置</h2>
+                                <label className="text-sm text-slate-500 block mb-2">图片显示宽度 (cm)</label>
+                                <input type="number" value={targetWidthCm} onChange={(e) => setTargetWidthCm(e.target.value)} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"/>
+                            </section>
+
+                            <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Upload" className="text-slate-400"/> 上传素材</h2>
+                                <div className="border-2 border-dashed rounded-xl p-8 text-center relative cursor-pointer hover:bg-slate-50 transition-colors">
+                                    <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                    <Icon name="Upload" size={24} className="mx-auto text-blue-500 mb-2"/>
+                                    <p className="text-sm font-semibold text-slate-600">点击或拖拽上传图片切片</p>
+                                </div>
+                            </section>
+
+                            {images.length > 0 && (
+                                <section className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4 px-2">排序列表 (可上下拖拽)</h3>
+                                    <div className="max-h-[350px] overflow-y-auto custom-scrollbar space-y-2">
+                                        {images.map((img, index) => (
+                                            <div key={img.id} draggable onDragStart={(e) => dragStart(e, index)} onDragEnter={(e) => dragEnter(e, index)} onDragEnd={drop} onDragOver={(e) => e.preventDefault()} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl cursor-move border border-transparent hover:border-blue-200 group transition-all">
+                                                <Icon name="MoveVertical" size={14} className="text-slate-300 group-hover:text-blue-400"/>
+                                                <img src={img.preview} className="w-10 h-10 rounded object-cover border bg-white" />
+                                                <p className="text-xs truncate flex-1 font-medium text-slate-700">{img.name}</p>
+                                                <button onClick={() => removeImage(img.id)} className="text-slate-300 hover:text-red-500 p-1 transition-colors"><Icon name="Trash2" size={14}/></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+                        </div>
+
+                        <div className="lg:col-span-8">
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[700px] flex flex-col">
+                                <div className="bg-slate-50 border-b p-4 text-center text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+                                    <Icon name="Eye" size={12}/> Outlook 预览视图
+                                </div>
+                                <div className="flex-1 p-8 overflow-auto bg-slate-200/20">
+                                    {images.length > 0 ? (
+                                        <div className="flex flex-col items-center">
+                                            <div className="preview-canvas w-full max-w-4xl">
+                                                <div className="p-4 preview-body">
+                                                    {/* 模拟邮件正文顶部的三次回车 */}
+                                                    <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
+                                                    <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
+                                                    <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
+                                                    <div className="edm-table" dangerouslySetInnerHTML={{ __html: generateTableContent(true) }} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center h-full text-slate-300">
+                                            <Icon name="Layout" size={64} className="opacity-10 mb-4"/>
+                                            <p className="text-sm font-medium">请先在左侧上传图片切片</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  ))}
                 </div>
-              </section>
-            )}
-          </div>
+            );
+        };
 
-          <div className="lg:col-span-8">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[700px] flex flex-col">
-              <div className="bg-slate-50 border-b border-slate-200 p-6 space-y-2 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full text-[10px] font-bold text-slate-500 uppercase">
-                  <Eye size={10} /> 邮件内容预览
-                </div>
-              </div>
-
-              <div className="flex-1 p-8 overflow-auto bg-slate-200/20">
-                {images.length > 0 ? (
-                  <div className="flex flex-col items-center">
-                    {/* 预览区域的模拟回车 */}
-                    <div className="w-full max-w-4xl bg-white shadow-2xl p-0 h-fit" style={{ minHeight: '600px' }}>
-                      <div className="p-4">
-                        <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '14.5px', color: '#000', lineHeight: '1.2' }}>&nbsp;</div>
-                        <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '14.5px', color: '#000', lineHeight: '1.2' }}>&nbsp;</div>
-                        <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '14.5px', color: '#000', lineHeight: '1.2' }}>&nbsp;</div>
-                        <div 
-                          style={{ fontSize: '0px', lineHeight: '0px' }}
-                          dangerouslySetInnerHTML={{ __html: generateTableContent(true) }} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center text-slate-400 mt-32">
-                    <Layout size={64} strokeWidth={1} className="mb-4 opacity-10" />
-                    <p>尚未上传图片</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <style>{`.custom-scrollbar::-webkit-scrollbar { width: 4px; } .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }`}</style>
-    </div>
-  );
-};
-
-export default App;
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
