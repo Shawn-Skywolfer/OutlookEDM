@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook EDM 制作专家</title>
+    <title>Outlook EDM 制作专家 v2.3 - 优化切片体验</title>
     <!-- 加载 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 加载 React 核心库 -->
@@ -14,34 +14,97 @@
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
         .preview-body { background-color: #ffffff; line-height: normal; }
-        .preview-canvas {
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-            background: white;
-        }
-        /* 强制消除预览中的图片间隙 */
+        .preview-canvas { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); background: white; }
         .edm-table td { line-height: 0; font-size: 0; }
         .edm-table img { display: block; vertical-align: top; }
+        
+        /* PS 风格切片编辑器 */
+        .ps-slicer-viewport {
+            position: relative;
+            cursor: crosshair;
+            min-height: 100%;
+        }
+        
+        .ps-slicer-container {
+            position: relative;
+            user-select: none;
+            background: #f1f5f9;
+            margin: 0 auto;
+        }
+        
+        .ps-slice {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border: 1px solid #00a8ff;
+            background: rgba(0, 168, 255, 0.08);
+            pointer-events: auto;
+            transition: background 0.1s;
+        }
+        .ps-slice:hover {
+            background: rgba(255, 159, 26, 0.15);
+            border-color: #ff9f1a;
+        }
+        .ps-slice.deleting {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            cursor: pointer;
+        }
+
+        .ps-slice-tag {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            background: #00a8ff;
+            color: white;
+            font-size: 9px;
+            padding: 0px 4px;
+            height: 14px;
+            line-height: 14px;
+            font-family: sans-serif;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .ps-slice:hover .ps-slice-tag { background: #ff9f1a; }
+        .ps-slice.deleting .ps-slice-tag { background: #ef4444; }
+
+        /* 绘制中的全宽虚线反馈 */
+        .ps-drawing-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #ff9f1a;
+            border-bottom: 1px dashed #ff9f1a;
+            background: rgba(255, 159, 26, 0.1);
+            pointer-events: none;
+            z-index: 20;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
+        const { useState, useRef, useEffect, useCallback } = React;
 
-        // 内联 SVG 图标组件，修复相邻 JSX 元素报错问题
+        // 内联 SVG 图标
         const Icon = ({ name, size = 18, className = "" }) => {
             const icons = {
                 Upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>,
-                Download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>,
-                MoveVertical: <path d="m8 18 4 4 4-4M8 6l4-4 4 4M12 2v20"/>,
                 Trash2: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"/>,
                 Layout: <path d="M3 3h18v18H3zM3 9h18M9 21V9"/>,
                 Eye: <React.Fragment><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></React.Fragment>,
                 Settings: <React.Fragment><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></React.Fragment>,
                 Mail: <React.Fragment><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></React.Fragment>,
-                Send: <React.Fragment><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></React.Fragment>
+                Send: <React.Fragment><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></React.Fragment>,
+                Scissors: <React.Fragment><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></React.Fragment>,
+                Undo: <path d="M3 7V2h5M2 2l4.9 4.9C8.3 5.4 10 4.5 12 4.5c4.1 0 7.5 3.4 7.5 7.5s-3.4 7.5-7.5 7.5c-2.8 0-5.3-1.5-6.6-3.8"/>,
+                Redo: <path d="M21 7V2h-5M22 2l-4.9 4.9c-1.4-1.5-3.1-2.4-5.1-2.4-4.1 0-7.5 3.4-7.5 7.5s3.4 7.5 7.5 7.5c2.8 0 5.3-1.5 6.6-3.8"/>,
+                Crop: <path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"/>,
+                Check: <path d="M20 6 9 17l-5-5"/>,
+                MoveVertical: <path d="m8 18 4 4 4-4M8 6l4-4 4 4M12 2v20"/>
             };
             return (
                 <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -51,246 +114,333 @@
         };
 
         const App = () => {
+            const [mode, setMode] = useState('slices'); 
             const [images, setImages] = useState([]);
+            const [longImage, setLongImage] = useState(null); 
             const [targetWidthCm, setTargetWidthCm] = useState(15);
             const [isExporting, setIsExporting] = useState(false);
-            const [mailInfo, setMailInfo] = useState({ to: '', cc: '', bcc: '', subject: 'Outlook EDM 邮件' });
+            const [mailInfo, setMailInfo] = useState({ subject: 'Outlook EDM 邮件' });
+            
+            const [editorTool, setEditorTool] = useState('slice'); 
+            const [sliceMarkers, setSliceMarkers] = useState([]);
+            const [history, setHistory] = useState([]);
+            const [redoStack, setRedoStack] = useState([]);
+            const [isDrawing, setIsDrawing] = useState(false);
+            const [currentDraw, setCurrentDraw] = useState(null);
 
             const dragItem = useRef(null);
             const dragOverItem = useRef(null);
+            const longImageContainerRef = useRef(null); // 图片所在的容器
+            const longImageImgRef = useRef(null); // 图片元素本身
 
             const CM_TO_PX = 37.8; 
+            const SNAP_THRESHOLD = 12; 
 
-            const encodeHeader = (str) => {
-                if (!str) return '';
-                if (/^[\x00-\x7F]*$/.test(str)) return str;
-                return `=?UTF-8?B?${btoa(unescape(encodeURIComponent(str)))}?=`;
+            const pushHistory = useCallback((newMarkers) => {
+                setHistory(prev => [...prev, sliceMarkers]);
+                setSliceMarkers(newMarkers);
+                setRedoStack([]);
+            }, [sliceMarkers]);
+
+            const undo = () => {
+                if (history.length === 0) return;
+                const prev = history[history.length - 1];
+                setRedoStack(p => [...p, sliceMarkers]);
+                setSliceMarkers(prev);
+                setHistory(history.slice(0, -1));
             };
 
-            const wrapBase64 = (str) => {
-                if (!str) return '';
-                return str.match(/.{1,76}/g)?.join("\r\n") || str;
-            };
-
-            const getFileNumber = (name) => {
-                const match = name.match(/\d+/);
-                return match ? parseInt(match[0], 10) : 999;
+            const redo = () => {
+                if (redoStack.length === 0) return;
+                const next = redoStack[redoStack.length - 1];
+                setHistory(p => [...p, sliceMarkers]);
+                setSliceMarkers(next);
+                setRedoStack(redoStack.slice(0, -1));
             };
 
             const handleFileUpload = (e) => {
                 const files = Array.from(e.target.files);
                 if (files.length === 0) return;
 
-                const promises = files.map(file => {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            const img = new Image();
-                            img.onload = () => {
-                                const safeName = file.name.replace(/[^a-zA-Z0-9]/g, '_');
-                                resolve({
-                                    id: Math.random().toString(36).substr(2, 9),
-                                    file: file,
-                                    name: file.name,
-                                    cid: `${safeName}_${Math.random().toString(36).substr(2, 5)}@edm.maker`,
-                                    preview: event.target.result,
-                                    width: img.width,
-                                    height: img.height,
-                                    aspectRatio: img.height / img.width,
-                                    order: getFileNumber(file.name)
-                                });
+                if (mode === 'slices') {
+                    const promises = files.map(file => {
+                        return new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                const img = new Image();
+                                img.onload = () => {
+                                    resolve({
+                                        id: Math.random().toString(36).substr(2, 9),
+                                        file: file,
+                                        name: file.name,
+                                        cid: `${file.name.replace(/[^a-zA-Z0-9]/g, '_')}@edm.maker`,
+                                        preview: event.target.result,
+                                        width: img.width, height: img.height,
+                                        aspectRatio: img.height / img.width,
+                                        order: parseInt(file.name.match(/\d+/)?.[0] || 999)
+                                    });
+                                };
+                                img.src = event.target.result;
                             };
-                            img.src = event.target.result;
-                        };
-                        reader.readAsDataURL(file);
+                            reader.readAsDataURL(file);
+                        });
                     });
-                });
-
-                Promise.all(promises).then(newResolvedImages => {
-                    setImages(prev => [...prev, ...newResolvedImages].sort((a, b) => a.order - b.order));
-                });
+                    Promise.all(promises).then(res => setImages(prev => [...prev, ...res].sort((a,b) => a.order - b.order)));
+                } else {
+                    const file = files[0];
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => setLongImage({ data: event.target.result, width: img.width, height: img.height, fileName: file.name });
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
                 e.target.value = '';
             };
 
-            const removeImage = (id) => setImages(images.filter(img => img.id !== id));
-
-            const dragStart = (e, position) => { dragItem.current = position; };
-            const dragEnter = (e, position) => { dragOverItem.current = position; };
-            const drop = () => {
-                if (dragItem.current === null || dragOverItem.current === null) return;
-                const copyListItems = [...images];
-                const dragItemContent = copyListItems[dragItem.current];
-                copyListItems.splice(dragItem.current, 1);
-                copyListItems.splice(dragOverItem.current, 0, dragItemContent);
-                dragItem.current = null;
-                dragOverItem.current = null;
-                setImages(copyListItems);
+            const findSnapY = (y, markers) => {
+                let bestY = y;
+                let minDelta = SNAP_THRESHOLD;
+                markers.forEach(m => {
+                    if (Math.abs(y - m.yStart) < minDelta) { bestY = m.yStart; minDelta = Math.abs(y - m.yStart); }
+                    if (Math.abs(y - m.yEnd) < minDelta) { bestY = m.yEnd; minDelta = Math.abs(y - m.yEnd); }
+                });
+                return bestY;
             };
 
-            // 彻底消除切片白边
-            const generateTableContent = (isForPreview = false) => {
-                const targetWidthPx = Math.round(targetWidthCm * CM_TO_PX);
-                const rows = images.map(img => {
-                    const rowHeight = Math.round(targetWidthPx * img.aspectRatio);
-                    // 关键修复：在一行内输出 td 和 img，不留任何空格或换行
-                    return `<tr><td align="center" valign="top" style="padding: 0; margin: 0; line-height: 0px; font-size: 0px; mso-line-height-rule: exactly; border: 0; text-align: center;"><img src="${isForPreview ? img.preview : 'cid:' + img.cid}" width="${targetWidthPx}" height="${rowHeight}" alt="${img.name}" style="display: block; width: ${targetWidthPx}px; height: ${rowHeight}px; border: 0; padding: 0; margin: 0 auto; vertical-align: top; outline: none; text-decoration: none;" /></td></tr>`;
-                }).join('');
-
-                return `<table border="0" cellpadding="0" cellspacing="0" width="${targetWidthPx}" align="center" style="width: ${targetWidthPx}px; border-collapse: collapse; margin: 0 auto; table-layout: fixed; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 0; mso-padding-alt: 0px;">${rows}</table>`;
+            // 获取坐标工具函数，支持从外部开始画
+            const getYFromEvent = (e) => {
+                if (!longImageImgRef.current) return 0;
+                const rect = longImageImgRef.current.getBoundingClientRect();
+                const scale = longImage.height / rect.height;
+                const rawY = (e.clientY - rect.top) * scale;
+                // 钳制在 0 到 图片高度之间
+                return Math.max(0, Math.min(rawY, longImage.height));
             };
 
-            const generateFullHTML = () => {
-                const tableHTML = generateTableContent(false);
-                const spacers = '<div style="font-family: Calibri, sans-serif; font-size: 11pt; line-height: 1.2; margin: 0; padding: 0;">&nbsp;</div>'.repeat(3);
-                return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<style type="text/css">
-table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; border-spacing: 0; }
-img { display: block; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; border: 0; }
-body { margin: 0; padding: 0; width: 100% !important; background-color: #ffffff; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
-td { mso-line-height-rule: exactly; padding: 0; }
-</style>
-</head>
-<body style="margin: 0; padding: 0; background-color: #ffffff; width: 100% !important;">
-${spacers}
-<table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed; width: 100% !important; border-spacing: 0;">
-<tr><td align="center" valign="top" style="padding: 0; font-size: 0px; line-height: 0px; mso-line-height-rule: exactly;">${tableHTML}</td></tr>
-</table>
-</body>
-</html>`;
+            const handleMouseDown = (e) => {
+                if (editorTool !== 'slice' || !longImage) return;
+                const snappedY = findSnapY(getYFromEvent(e), sliceMarkers);
+                setIsDrawing(true);
+                setCurrentDraw({ yStart: snappedY, yEnd: snappedY });
+            };
+
+            const handleMouseMove = (e) => {
+                if (!isDrawing || !longImage) return;
+                const snappedY = findSnapY(getYFromEvent(e), sliceMarkers);
+                setCurrentDraw(prev => ({ ...prev, yEnd: snappedY }));
+            };
+
+            const handleMouseUp = () => {
+                if (!isDrawing || !currentDraw) return;
+                setIsDrawing(false);
+                const start = Math.min(currentDraw.yStart, currentDraw.yEnd);
+                const end = Math.max(currentDraw.yStart, currentDraw.yEnd);
+                
+                if (end - start < 5) { setCurrentDraw(null); return; }
+
+                const parentSlice = sliceMarkers.find(m => start >= m.yStart && end <= m.yEnd);
+                
+                if (parentSlice) {
+                    let newPieces = [];
+                    if (start > parentSlice.yStart) {
+                        newPieces.push({ id: Math.random().toString(36).substr(2, 5), yStart: parentSlice.yStart, yEnd: start });
+                    }
+                    newPieces.push({ id: Math.random().toString(36).substr(2, 5), yStart: start, yEnd: end });
+                    if (end < parentSlice.yEnd) {
+                        newPieces.push({ id: Math.random().toString(36).substr(2, 5), yStart: end, yEnd: parentSlice.yEnd });
+                    }
+                    const otherMarkers = sliceMarkers.filter(m => m.id !== parentSlice.id);
+                    pushHistory([...otherMarkers, ...newPieces]);
+                } else {
+                    const isOverlap = sliceMarkers.some(m => (start < m.yEnd && end > m.yStart));
+                    if (!isOverlap) {
+                        pushHistory([...sliceMarkers, { id: Math.random().toString(36).substr(2, 5), yStart: start, yEnd: end }]);
+                    }
+                }
+                setCurrentDraw(null);
+            };
+
+            const makeEdm = () => {
+                if (!longImage || sliceMarkers.length === 0) return;
+                const sorted = [...sliceMarkers].sort((a, b) => a.yStart - b.yStart);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = () => {
+                    const newImgs = sorted.map((m, i) => {
+                        const w = longImage.width, h = m.yEnd - m.yStart;
+                        canvas.width = w; canvas.height = h;
+                        ctx.drawImage(img, 0, m.yStart, w, h, 0, 0, w, h);
+                        return {
+                            id: Math.random().toString(36).substr(2, 9),
+                            name: `slice_${i+1}.jpg`,
+                            cid: `slice_${i+1}@edm.maker`,
+                            preview: canvas.toDataURL('image/jpeg', 0.9),
+                            aspectRatio: h / w,
+                            order: i,
+                            file: { type: 'image/jpeg' }
+                        };
+                    });
+                    setImages(newImgs);
+                    setMode('slices');
+                };
+                img.src = longImage.data;
             };
 
             const exportAsEML = () => {
                 if (images.length === 0) return;
                 setIsExporting(true);
-                try {
-                    const htmlContent = generateFullHTML();
-                    const encodedHTML = wrapBase64(btoa(unescape(encodeURIComponent(htmlContent))));
-                    const boundary = "boundary_" + Math.random().toString(36).substr(2, 9);
-                    const messageId = `<${Date.now()}@edm.maker>`;
-                    
-                    const emlParts = [
-                        `To: ${encodeHeader(mailInfo.to)}`,
-                        `Cc: ${encodeHeader(mailInfo.cc)}`,
-                        `Bcc: ${encodeHeader(mailInfo.bcc)}`,
-                        `Subject: ${encodeHeader(mailInfo.subject)}`,
-                        `Message-ID: ${messageId}`,
-                        "MIME-Version: 1.0",
-                        `Content-Type: multipart/related; boundary="${boundary}"; type="text/html"`,
-                        "X-Unsent: 1", 
-                        "",
-                        `--${boundary}`,
-                        "Content-Type: text/html; charset=UTF-8",
-                        "Content-Transfer-Encoding: base64", 
-                        "",
-                        encodedHTML, 
-                        ""
-                    ];
-
-                    images.forEach(img => {
-                        const rawBase64 = img.preview.split(',')[1];
-                        emlParts.push(`--${boundary}`);
-                        emlParts.push(`Content-Type: ${img.file.type || 'image/jpeg'}`);
-                        emlParts.push("Content-Transfer-Encoding: base64");
-                        emlParts.push(`Content-ID: <${img.cid}>`);
-                        emlParts.push(`Content-Disposition: inline; filename="${encodeHeader(img.name)}"`);
-                        emlParts.push("");
-                        emlParts.push(wrapBase64(rawBase64));
-                        emlParts.push("");
-                    });
-                    emlParts.push(`--${boundary}--`);
-
-                    const blob = new Blob([emlParts.join("\r\n")], { type: 'message/rfc822' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url; 
-                    a.download = `${mailInfo.subject || 'Outlook_EDM'}.eml`; 
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                } catch (err) {
-                    console.error("Export error:", err);
-                } finally { 
-                    setIsExporting(false); 
-                }
+                const targetWidthPx = Math.round(targetWidthCm * CM_TO_PX);
+                const spacers = '<div style="font-family: Calibri; font-size: 11pt; line-height: 1.2;">&nbsp;</div>'.repeat(3);
+                const tableRows = images.map(img => `<tr><td align="center" style="padding:0;line-height:0;font-size:0;"><img src="cid:${img.cid}" width="${targetWidthPx}" height="${Math.round(targetWidthPx * img.aspectRatio)}" style="display:block;border:0;width:${targetWidthPx}px;vertical-align:top;"></td></tr>`).join('');
+                const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#ffffff;">${spacers}<table border="0" cellpadding="0" cellspacing="0" width="${targetWidthPx}" align="center" style="border-collapse:collapse;margin:0 auto;table-layout:fixed;">${tableRows}</table></body></html>`;
+                const boundary = "boundary_" + Date.now();
+                const encodedHTML = btoa(unescape(encodeURIComponent(html))).match(/.{1,76}/g).join("\r\n");
+                let eml = [`Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(mailInfo.subject)))}?=`, "MIME-Version: 1.0", `Content-Type: multipart/related; boundary="${boundary}"`, "X-Unsent: 1", "", `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "", encodedHTML, ""];
+                images.forEach(img => {
+                    eml.push(`--${boundary}`, `Content-Type: image/jpeg`, "Content-Transfer-Encoding: base64", `Content-ID: <${img.cid}>`, `Content-Disposition: inline; filename="${img.name}"`, "", img.preview.split(',')[1].match(/.{1,76}/g).join("\r\n"), "");
+                });
+                eml.push(`--${boundary}--`);
+                const blob = new Blob([eml.join("\r\n")], { type: 'message/rfc822' });
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${mailInfo.subject}.eml`; a.click();
+                setIsExporting(false);
             };
 
             return (
                 <div className="p-4 md:p-8 max-w-7xl mx-auto">
                     <header className="flex flex-col md:flex-row justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> Outlook EDM 制作专家</h1>
-                            <p className="text-slate-500 mt-1 text-sm">已修复启动报错与切片缝隙，模拟首行三次回车居中布局</p>
+                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> Outlook EDM 制作专家 <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">v2.3</span></h1>
+                            <p className="text-slate-500 mt-1 text-sm">边缘自动吸附，支持跨边界点击画切片，100% 宽度自动对齐</p>
                         </div>
-                        <button onClick={exportAsEML} disabled={images.length === 0 || isExporting} className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                            <Icon name="Send" size={20}/> {isExporting ? '处理中...' : '导出并准备发送'}
-                        </button>
+                        <div className="flex gap-2">
+                            {mode === 'long-image' && longImage && (
+                                <button onClick={makeEdm} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg flex items-center gap-2">
+                                    <Icon name="Check" size={20}/> 制作 EDM
+                                </button>
+                            )}
+                            <button onClick={exportAsEML} disabled={images.length === 0 || isExporting} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95">
+                                <Icon name="Send" size={20}/> {isExporting ? '处理中...' : '生成 EML 邮件'}
+                            </button>
+                        </div>
                     </header>
+
+                    <div className="flex bg-white p-1 rounded-xl w-fit shadow-sm border mb-8">
+                        <button onClick={() => setMode('slices')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === 'slices' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><Icon name="Layout" size={16}/> 上传切片模式</button>
+                        <button onClick={() => setMode('long-image')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === 'long-image' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><Icon name="Crop" size={16}/> 长图切割模式</button>
+                    </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div className="lg:col-span-4 space-y-6">
                             <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Mail" className="text-blue-500"/> 邮件主题设置</h2>
-                                <input type="text" value={mailInfo.subject} onChange={(e) => setMailInfo({...mailInfo, subject: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" placeholder="输入邮件主题"/>
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Mail" size={18} className="text-blue-500"/> 邮件主题</h2>
+                                <input type="text" value={mailInfo.subject} onChange={(e) => setMailInfo({subject: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"/>
                             </section>
 
                             <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Settings" className="text-slate-400"/> 尺寸设置</h2>
-                                <label className="text-sm text-slate-500 block mb-2">图片显示宽度 (cm)</label>
-                                <input type="number" value={targetWidthCm} onChange={(e) => setTargetWidthCm(e.target.value)} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"/>
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Settings" size={18} className="text-slate-400"/> 尺寸设置</h2>
+                                <label className="text-xs text-slate-400 block mb-1">图片显示宽度 (cm)</label>
+                                <input type="number" value={targetWidthCm} onChange={(e) => setTargetWidthCm(e.target.value)} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"/>
                             </section>
 
                             <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Upload" className="text-slate-400"/> 上传素材</h2>
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Upload" size={18} className="text-slate-400"/> 上传素材</h2>
                                 <div className="border-2 border-dashed rounded-xl p-8 text-center relative cursor-pointer hover:bg-slate-50 transition-colors">
-                                    <input type="file" multiple accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                    <input type="file" multiple={mode === 'slices'} accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     <Icon name="Upload" size={24} className="mx-auto text-blue-500 mb-2"/>
-                                    <p className="text-sm font-semibold text-slate-600">点击或拖拽上传图片切片</p>
+                                    <p className="text-xs font-semibold text-slate-600">{mode === 'slices' ? '上传多张切片文件' : '上传一张设计长图'}</p>
                                 </div>
                             </section>
 
-                            {images.length > 0 && (
-                                <section className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4 px-2">排序列表 (可上下拖拽)</h3>
-                                    <div className="max-h-[350px] overflow-y-auto custom-scrollbar space-y-2">
-                                        {images.map((img, index) => (
-                                            <div key={img.id} draggable onDragStart={(e) => dragStart(e, index)} onDragEnter={(e) => dragEnter(e, index)} onDragEnd={drop} onDragOver={(e) => e.preventDefault()} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl cursor-move border border-transparent hover:border-blue-200 group transition-all">
-                                                <Icon name="MoveVertical" size={14} className="text-slate-300 group-hover:text-blue-400"/>
-                                                <img src={img.preview} className="w-10 h-10 rounded object-cover border bg-white" />
-                                                <p className="text-xs truncate flex-1 font-medium text-slate-700">{img.name}</p>
-                                                <button onClick={() => removeImage(img.id)} className="text-slate-300 hover:text-red-500 p-1 transition-colors"><Icon name="Trash2" size={14}/></button>
-                                            </div>
-                                        ))}
+                            {mode === 'long-image' && longImage && (
+                                <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">切片工具箱</h3>
+                                    <div className="grid grid-cols-2 gap-2 mb-4">
+                                        <button onClick={() => setEditorTool('slice')} className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === 'slice' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'text-slate-500'}`}><Icon name="Scissors" size={16}/> 切片工具</button>
+                                        <button onClick={() => setEditorTool('delete')} className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === 'delete' ? 'bg-red-50 border-red-500 text-red-600' : 'text-slate-500'}`}><Icon name="Trash2" size={16}/> 删除切片</button>
                                     </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={undo} disabled={history.length === 0} className="flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"><Icon name="Undo" size={14} className="inline mr-1"/>撤销</button>
+                                        <button onClick={redo} disabled={redoStack.length === 0} className="flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"><Icon name="Redo" size={14} className="inline mr-1"/>重做</button>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-4 leading-relaxed">
+                                        提示：<br/>
+                                        1. 支持从图片外的灰色区域开始拖拽绘制。<br/>
+                                        2. 绘制高度将自动锁定并吸附至图片边缘。<br/>
+                                        3. 选区将始终横贯图片左右两侧。
+                                    </p>
                                 </section>
                             )}
                         </div>
 
                         <div className="lg:col-span-8">
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[700px] flex flex-col">
-                                <div className="bg-slate-50 border-b p-4 text-center text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-                                    <Icon name="Eye" size={12}/> Outlook 预览视图
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[750px] flex flex-col">
+                                <div className="bg-slate-50 border-b p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
+                                    <Icon name="Eye" size={12}/> {mode === 'slices' ? 'Outlook 发送预览' : '跨边界切片编辑器'}
                                 </div>
-                                <div className="flex-1 p-8 overflow-auto bg-slate-200/20">
-                                    {images.length > 0 ? (
-                                        <div className="flex flex-col items-center">
-                                            <div className="preview-canvas w-full max-w-4xl">
-                                                <div className="p-4 preview-body">
-                                                    {/* 模拟邮件正文顶部的三次回车 */}
-                                                    <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
-                                                    <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
-                                                    <div style={{ fontFamily: 'Calibri, sans-serif', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
-                                                    <div className="edm-table" dangerouslySetInnerHTML={{ __html: generateTableContent(true) }} />
+                                
+                                <div 
+                                    className="flex-1 p-8 overflow-auto bg-slate-200/20 ps-slicer-viewport"
+                                    onMouseDown={mode === 'long-image' ? handleMouseDown : undefined}
+                                    onMouseMove={mode === 'long-image' ? handleMouseMove : undefined}
+                                    onMouseUp={mode === 'long-image' ? handleMouseUp : undefined}
+                                    onMouseLeave={mode === 'long-image' && isDrawing ? handleMouseUp : undefined}
+                                >
+                                    {mode === 'slices' ? (
+                                        images.length > 0 ? (
+                                            <div className="flex flex-col items-center">
+                                                <div className="preview-canvas w-full max-w-4xl p-6">
+                                                    <div style={{ fontFamily: 'Calibri', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
+                                                    <div style={{ fontFamily: 'Calibri', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
+                                                    <div style={{ fontFamily: 'Calibri', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
+                                                    <table border="0" cellpadding="0" cellspacing="0" align="center" style={{borderCollapse:'collapse', margin:'0 auto', width:`${Math.round(targetWidthCm * CM_TO_PX)}px`}}>
+                                                        <tbody>
+                                                            {images.map(img => (
+                                                                <tr key={img.id}>
+                                                                    <td align="center" style={{padding:0, lineHeight:0, fontSize:0}}>
+                                                                        <img src={img.preview} style={{display:'block', width:'100%', border:0}} />
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
                                                 </div>
                                             </div>
-                                        </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Layout" size={64} className="mb-4"/><p>等待素材上传...</p></div>
+                                        )
                                     ) : (
-                                        <div className="flex flex-col items-center justify-center h-full text-slate-300">
-                                            <Icon name="Layout" size={64} className="opacity-10 mb-4"/>
-                                            <p className="text-sm font-medium">请先在左侧上传图片切片</p>
-                                        </div>
+                                        longImage ? (
+                                            <div className="flex justify-center">
+                                                <div 
+                                                    ref={longImageContainerRef}
+                                                    className="ps-slicer-container shadow-2xl" 
+                                                    style={{ width: '100%', maxWidth: '800px' }}
+                                                >
+                                                    <img 
+                                                        ref={longImageImgRef}
+                                                        src={longImage.data} 
+                                                        className="w-full block pointer-events-none" 
+                                                        alt="Source" 
+                                                    />
+                                                    {sliceMarkers.sort((a,b)=>a.yStart-b.yStart).map((m, i) => (
+                                                        <div key={m.id} 
+                                                            className={`ps-slice ${editorTool === 'delete' ? 'deleting' : ''}`} 
+                                                            style={{ top: `${(m.yStart / longImage.height) * 100}%`, height: `${((m.yEnd - m.yStart) / longImage.height) * 100}%` }} 
+                                                            onClick={(e) => { e.stopPropagation(); editorTool === 'delete' && pushHistory(sliceMarkers.filter(s => s.id !== m.id)); }}>
+                                                            <div className="ps-slice-tag">{(i + 1).toString().padStart(2, '0')}</div>
+                                                        </div>
+                                                    ))}
+                                                    {isDrawing && currentDraw && (
+                                                        <div className="ps-drawing-overlay" style={{ top: `${(Math.min(currentDraw.yStart, currentDraw.yEnd) / longImage.height) * 100}%`, height: `${(Math.abs(currentDraw.yEnd - currentDraw.yStart) / longImage.height) * 100}%` }} />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Crop" size={64} className="mb-4"/><p>上传长图开始切割</p></div>
+                                        )
                                     )}
                                 </div>
                             </div>
