@@ -4,13 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Outlook EDM 制作专家 v2.3 - 优化切片体验</title>
-    <!-- 加载 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 加载 React 核心库 -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- 加载 Babel 用于在线解析 JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 初始加载状态样式 -->
+    <style>
+        #app-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            transition: opacity 0.5s ease-out;
+        }
+        .loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        .loader-text {
+            color: #475569;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .loader-status {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        .loader-error {
+            color: #ef4444;
+            max-width: 400px;
+            text-align: center;
+            background: #fef2f2;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #fee2e2;
+            display: none;
+        }
+        .loader-retry {
+            margin-top: 16px;
+            padding: 8px 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .loader-retry:hover { background: #2563eb; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+    <!-- 加载覆盖层 -->
+    <div id="app-loader">
+        <div class="loader-spinner" id="loader-spinner"></div>
+        <div class="loader-text">Outlook EDM 制作专家</div>
+        <div class="loader-status" id="loader-status">正在初始化环境...</div>
+        <div class="loader-error" id="loader-error">
+            <div style="font-weight:bold;margin-bottom:8px">加载失败</div>
+            <div id="loader-error-msg"></div>
+            <button class="loader-retry" onclick="location.reload()">重新加载</button>
+        </div>
+    </div>
+
+    <div id="root"></div>
+
+    <!-- 资源加载管理器 -->
+    <script>
+        (function() {
+            const resources = [
+                { url: 'https://cdn.tailwindcss.com', name: 'UI 框架 (Tailwind CSS)', type: 'script' },
+                { url: 'https://unpkg.com/react@18/umd/react.production.min.js', name: 'React 核心库', type: 'script' },
+                { url: 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', name: 'React DOM', type: 'script' },
+                { url: 'https://unpkg.com/@babel/standalone/babel.min.js', name: 'Babel 编译器', type: 'script' }
+            ];
+
+            const updateStatus = (msg) => {
+                const el = document.getElementById('loader-status');
+                if (el) el.textContent = msg;
+            };
+
+            const showError = (msg) => {
+                document.getElementById('loader-spinner').style.display = 'none';
+                document.getElementById('loader-status').style.display = 'none';
+                const errEl = document.getElementById('loader-error');
+                errEl.style.display = 'block';
+                document.getElementById('loader-error-msg').textContent = msg;
+            };
+
+            const loadScript = (res) => {
+                return new Promise((resolve, reject) => {
+                    updateStatus(`正在加载 ${res.name}...`);
+                    const script = document.createElement('script');
+                    script.src = res.url;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error(`无法加载 ${res.name}`));
+                    document.head.appendChild(script);
+                });
+            };
+
+            const loadAll = async () => {
+                try {
+                    for (const res of resources) {
+                        await loadScript(res);
+                    }
+                    updateStatus('正在启动应用...');
+                    
+                    // 手动触发 Babel 编译，因为 Babel 是动态加载的，错过了 DOMContentLoaded 事件
+                    if (window.Babel) {
+                        window.Babel.transformScriptTags();
+                    }
+
+                    // 稍微延迟以展示完成状态，并确保 React 挂载前 DOM 准备就绪
+                    setTimeout(() => {
+                        // 通知 React 组件已就绪（通过事件或全局变量，这里直接移除 loader 由 React 挂载后处理）
+                        // 由于我们是内联 babel script，这里需要手动触发 Babel 编译或者等待 Babel 自动处理
+                        // Babel standalone 会自动寻找 text/babel 脚本并执行
+                        // 我们只需要移除 loader
+                        
+                        // 监听 React 挂载完成
+                        const checkReact = setInterval(() => {
+                            if (window.React && window.ReactDOM) {
+                                clearInterval(checkReact);
+                                // React 代码开始执行后，loader 会被组件替换或遮挡
+                                // 但为了平滑过渡，我们可以让 React 组件负责隐藏 loader
+                                // 或者在这里简单地淡出
+                                const loader = document.getElementById('app-loader');
+                                loader.style.opacity = '0';
+                                setTimeout(() => loader.remove(), 500);
+                            }
+                        }, 100);
+                    }, 500);
+                } catch (err) {
+                    showError(err.message + '。请检查网络连接后重试。');
+                }
+            };
+
+            loadAll();
+        })();
+    </script>
+
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -698,7 +843,7 @@
                     <header className="flex flex-col md:flex-row justify-between gap-4 mb-8">
                         <div>
                             <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> Outlook EDM 制作专家 <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">v2.3</span></h1>
-                            <p className="text-slate-500 mt-1 text-sm">Powered by 靳晓楠00491162>ip>
+                            <p className="text-slate-500 mt-1 text-sm">Powered by 靳晓楠00491162</p>
                         </div>
                         <div className="flex gap-2">
                             {mode === 'long-image' && longImage && (
