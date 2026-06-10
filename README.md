@@ -6,6 +6,12 @@
 
 ## 主要功能
 
+- **中英双语界面 / Bilingual interface**
+  - 点击页面右上角的 `中文 / EN` 可随时切换界面语言。
+  - Use the `中文 / EN` control in the upper-right corner to switch languages at any time.
+  - 语言偏好会保存在浏览器中，并在下次打开时自动恢复。
+  - Your language preference is saved in the browser and restored on your next visit.
+
 - **上传切片模式**
   - 一次上传多张图片。
   - 根据文件名中的数字自动进行初始排序。
