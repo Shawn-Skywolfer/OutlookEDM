@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook EDM Maker v2.3 / Outlook EDM 制作专家</title>
+    <title>Outlook EDM 制作专家 / Outlook EDM Maker v2.4</title>
     
     <!-- 初始加载状态样式 -->
     <style>
@@ -148,7 +148,7 @@
                         }, 100);
                     }, 500);
                 } catch (err) {
-                    showError(err.message + '。请检查网络连接后重试。 / Check your network connection and try again.');
+                    showError(err.message + '。请检查网络连接后重试。 / Check your connection and try again.');
                 }
             };
 
@@ -367,14 +367,16 @@
         const translations = {
             zh: {
                 appName: 'Outlook EDM 制作专家',
+                documentTitle: 'Outlook EDM 制作专家 v2.4 - 中英双语版',
+                defaultSubject: 'Outlook EDM 邮件',
                 makeEdm: '制作 EDM',
                 processing: '处理中...',
-                generateEml: '生成 EML 邮件',
+                exportEml: '生成 EML 邮件',
                 slicesMode: '上传切片模式',
                 longImageMode: '长图切割模式',
                 mailSubject: '邮件主题',
                 sizeSettings: '尺寸设置',
-                displayWidth: '图片显示宽度 (cm)',
+                imageWidth: '图片显示宽度 (cm)',
                 uploadAssets: '上传素材',
                 uploadSlices: '上传多张切片文件',
                 uploadLongImage: '上传一张设计长图',
@@ -384,27 +386,30 @@
                 undo: '撤销',
                 redo: '重做',
                 tips: '提示：',
-                tip1: '1. 支持从图片外的灰色区域开始拖拽绘制。',
-                tip2: '2. 绘制高度将自动锁定并吸附至图片边缘。',
-                tip3: '3. 选区将始终横贯图片左右两侧。',
+                tipOutside: '1. 支持从图片外的灰色区域开始拖拽绘制。',
+                tipSnap: '2. 绘制高度将自动锁定并吸附至图片边缘。',
+                tipFullWidth: '3. 选区将始终横贯图片左右两侧。',
                 outlookPreview: 'Outlook 发送预览',
                 slicerEditor: '跨边界切片编辑器',
-                waitingAssets: '等待素材上传...',
-                uploadToSlice: '上传长图开始切割',
-                sourceImageAlt: '待切割的长图',
-                defaultSubject: 'Outlook EDM 邮件',
-                languageLabel: 'English'
+                waitingUpload: '等待素材上传...',
+                startSlicing: '上传长图开始切割',
+                sourceImageAlt: '待切割的源图片',
+                language: '语言',
+                switchToChinese: '切换为中文',
+                switchToEnglish: 'Switch to English'
             },
             en: {
                 appName: 'Outlook EDM Maker',
+                documentTitle: 'Outlook EDM Maker v2.4 - Bilingual Edition',
+                defaultSubject: 'Outlook EDM Email',
                 makeEdm: 'Create EDM',
                 processing: 'Processing...',
-                generateEml: 'Generate EML',
+                exportEml: 'Generate EML Email',
                 slicesMode: 'Upload Slices',
                 longImageMode: 'Slice Long Image',
                 mailSubject: 'Email Subject',
                 sizeSettings: 'Size Settings',
-                displayWidth: 'Image display width (cm)',
+                imageWidth: 'Image display width (cm)',
                 uploadAssets: 'Upload Assets',
                 uploadSlices: 'Upload multiple image slices',
                 uploadLongImage: 'Upload one long design image',
@@ -414,25 +419,24 @@
                 undo: 'Undo',
                 redo: 'Redo',
                 tips: 'Tips:',
-                tip1: '1. You can begin dragging from the gray area outside the image.',
-                tip2: '2. Slice height is constrained and snaps to image or slice edges.',
-                tip3: '3. Every slice always spans the full image width.',
+                tipOutside: '1. Start dragging from the gray area outside the image.',
+                tipSnap: '2. Slice height locks automatically and snaps to image edges.',
+                tipFullWidth: '3. Every selection spans the full width of the image.',
                 outlookPreview: 'Outlook Email Preview',
                 slicerEditor: 'Cross-boundary Slice Editor',
-                waitingAssets: 'Waiting for image assets...',
-                uploadToSlice: 'Upload a long image to start slicing',
-                sourceImageAlt: 'Long image to be sliced',
-                defaultSubject: 'Outlook EDM Email',
-                languageLabel: '中文'
+                waitingUpload: 'Waiting for assets...',
+                startSlicing: 'Upload a long image to start slicing',
+                sourceImageAlt: 'Source image to be sliced',
+                language: 'Language',
+                switchToChinese: '切换为中文',
+                switchToEnglish: 'Switch to English'
             }
         };
 
         const getInitialLanguage = () => {
-            try {
-                return localStorage.getItem('outlook-edm-language') === 'en' ? 'en' : 'zh';
-            } catch (error) {
-                return 'zh';
-            }
+            const savedLanguage = localStorage.getItem('outlook-edm-language');
+            if (savedLanguage === 'zh' || savedLanguage === 'en') return savedLanguage;
+            return navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en';
         };
 
         const App = () => {
@@ -443,7 +447,7 @@
             const [longImage, setLongImage] = useState(null); 
             const [targetWidthCm, setTargetWidthCm] = useState(15);
             const [isExporting, setIsExporting] = useState(false);
-            const [mailInfo, setMailInfo] = useState({ subject: translations[language].defaultSubject });
+            const [mailInfo, setMailInfo] = useState({ subject: translations[getInitialLanguage()].defaultSubject });
             
             const [editorTool, setEditorTool] = useState('slice'); 
             const [sliceMarkers, setSliceMarkers] = useState([]);
@@ -469,25 +473,16 @@
             const SNAP_THRESHOLD = 12;
 
             useEffect(() => {
-                try {
-                    localStorage.setItem('outlook-edm-language', language);
-                } catch (error) {
-                    // The language still works for this session when storage is unavailable.
-                }
+                localStorage.setItem('outlook-edm-language', language);
                 document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
-                document.title = language === 'zh'
-                    ? 'Outlook EDM 制作专家 v2.3'
-                    : 'Outlook EDM Maker v2.3';
+                document.title = t.documentTitle;
+                setMailInfo(current => {
+                    const otherLanguage = language === 'zh' ? 'en' : 'zh';
+                    return current.subject === translations[otherLanguage].defaultSubject
+                        ? { subject: t.defaultSubject }
+                        : current;
+                });
             }, [language]);
-
-            const switchLanguage = () => {
-                const nextLanguage = language === 'zh' ? 'en' : 'zh';
-                const currentDefault = translations[language].defaultSubject;
-                setMailInfo(prev => ({
-                    subject: prev.subject === currentDefault ? translations[nextLanguage].defaultSubject : prev.subject
-                }));
-                setLanguage(nextLanguage);
-            };
 
             // 拖拽排序处理
             const handleDragStart = (e, index) => {
@@ -1006,25 +1001,37 @@
                 <div className="p-4 md:p-8 max-w-7xl mx-auto">
                     <header className="flex flex-col md:flex-row justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> {t.appName} <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">v2.3</span></h1>
+                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> {t.appName} <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">v2.4</span></h1>
                             <p className="text-slate-500 mt-1 text-sm">Powered by 靳晓楠00491162</p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={switchLanguage}
-                                className="border border-slate-300 bg-white text-slate-600 px-4 py-3 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors"
-                                aria-label={language === 'zh' ? 'Switch to English' : '切换到中文'}
-                            >
-                                {t.languageLabel}
-                            </button>
+                            <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm" role="group" aria-label={t.language}>
+                                <button
+                                    type="button"
+                                    onClick={() => setLanguage('zh')}
+                                    aria-pressed={language === 'zh'}
+                                    title={t.switchToChinese}
+                                    className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${language === 'zh' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                                >
+                                    中文
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setLanguage('en')}
+                                    aria-pressed={language === 'en'}
+                                    title={t.switchToEnglish}
+                                    className={`rounded-lg px-3 py-2 text-sm font-bold transition-colors ${language === 'en' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+                                >
+                                    EN
+                                </button>
+                            </div>
                             {mode === 'long-image' && longImage && (
                                 <button onClick={makeEdm} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg flex items-center gap-2">
                                     <Icon name="Check" size={20}/> {t.makeEdm}
                                 </button>
                             )}
                             <button onClick={exportAsEML} disabled={images.length === 0 || isExporting} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95">
-                                <Icon name="Send" size={20}/> {isExporting ? t.processing : t.generateEml}
+                                <Icon name="Send" size={20}/> {isExporting ? t.processing : t.exportEml}
                             </button>
                         </div>
                     </header>
@@ -1044,7 +1051,7 @@
                             {mode === 'slices' && (
                                 <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                                     <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Settings" size={18} className="text-slate-400"/> {t.sizeSettings}</h2>
-                                    <label className="text-xs text-slate-400 block mb-1">{t.displayWidth}</label>
+                                    <label className="text-xs text-slate-400 block mb-1">{t.imageWidth}</label>
                                     <input type="number" value={targetWidthCm} onChange={(e) => setTargetWidthCm(e.target.value)} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"/>
                                 </section>
                             )}
@@ -1071,9 +1078,9 @@
                                     </div>
                                     <p className="text-[10px] text-slate-400 mt-4 leading-relaxed">
                                         {t.tips}<br/>
-                                        {t.tip1}<br/>
-                                        {t.tip2}<br/>
-                                        {t.tip3}
+                                        {t.tipOutside}<br/>
+                                        {t.tipSnap}<br/>
+                                        {t.tipFullWidth}
                                     </p>
                                 </section>
                             )}
@@ -1132,7 +1139,7 @@
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Layout" size={64} className="mb-4"/><p>{t.waitingAssets}</p></div>
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Layout" size={64} className="mb-4"/><p>{t.waitingUpload}</p></div>
                                         )
                                     ) : (
                                         longImage ? (
@@ -1181,7 +1188,7 @@
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Crop" size={64} className="mb-4"/><p>{t.uploadToSlice}</p></div>
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Crop" size={64} className="mb-4"/><p>{t.startSlicing}</p></div>
                                         )
                                     )}
                                 </div>
