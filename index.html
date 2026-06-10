@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Outlook EDM 制作专家 v2.3 - 优化切片体验</title>
+    <title>Outlook EDM Maker v2.3 / Outlook EDM 制作专家</title>
     
     <!-- 初始加载状态样式 -->
     <style>
@@ -70,12 +70,12 @@
     <!-- 加载覆盖层 -->
     <div id="app-loader">
         <div class="loader-spinner" id="loader-spinner"></div>
-        <div class="loader-text">Outlook EDM 制作专家</div>
-        <div class="loader-status" id="loader-status">正在初始化环境...</div>
+        <div class="loader-text">Outlook EDM 制作专家 / Outlook EDM Maker</div>
+        <div class="loader-status" id="loader-status">正在初始化环境 / Initializing...</div>
         <div class="loader-error" id="loader-error">
-            <div style="font-weight:bold;margin-bottom:8px">加载失败</div>
+            <div style="font-weight:bold;margin-bottom:8px">加载失败 / Loading failed</div>
             <div id="loader-error-msg"></div>
-            <button class="loader-retry" onclick="location.reload()">重新加载</button>
+            <button class="loader-retry" onclick="location.reload()">重新加载 / Reload</button>
         </div>
     </div>
 
@@ -85,10 +85,10 @@
     <script>
         (function() {
             const resources = [
-                { url: 'https://cdn.tailwindcss.com', name: 'UI 框架 (Tailwind CSS)', type: 'script' },
-                { url: 'https://unpkg.com/react@18/umd/react.production.min.js', name: 'React 核心库', type: 'script' },
+                { url: 'https://cdn.tailwindcss.com', name: 'UI 框架 / UI framework (Tailwind CSS)', type: 'script' },
+                { url: 'https://unpkg.com/react@18/umd/react.production.min.js', name: 'React 核心库 / React core', type: 'script' },
                 { url: 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js', name: 'React DOM', type: 'script' },
-                { url: 'https://unpkg.com/@babel/standalone/babel.min.js', name: 'Babel 编译器', type: 'script' }
+                { url: 'https://unpkg.com/@babel/standalone/babel.min.js', name: 'Babel 编译器 / Babel compiler', type: 'script' }
             ];
 
             const updateStatus = (msg) => {
@@ -106,11 +106,11 @@
 
             const loadScript = (res) => {
                 return new Promise((resolve, reject) => {
-                    updateStatus(`正在加载 ${res.name}...`);
+                    updateStatus(`正在加载 / Loading ${res.name}...`);
                     const script = document.createElement('script');
                     script.src = res.url;
                     script.onload = resolve;
-                    script.onerror = () => reject(new Error(`无法加载 ${res.name}`));
+                    script.onerror = () => reject(new Error(`无法加载 / Unable to load ${res.name}`));
                     document.head.appendChild(script);
                 });
             };
@@ -120,7 +120,7 @@
                     for (const res of resources) {
                         await loadScript(res);
                     }
-                    updateStatus('正在启动应用...');
+                    updateStatus('正在启动应用 / Starting application...');
                     
                     // 手动触发 Babel 编译，因为 Babel 是动态加载的，错过了 DOMContentLoaded 事件
                     if (window.Babel) {
@@ -148,7 +148,7 @@
                         }, 100);
                     }, 500);
                 } catch (err) {
-                    showError(err.message + '。请检查网络连接后重试。');
+                    showError(err.message + '。请检查网络连接后重试。 / Check your network connection and try again.');
                 }
             };
 
@@ -364,13 +364,86 @@
             );
         };
 
+        const translations = {
+            zh: {
+                appName: 'Outlook EDM 制作专家',
+                makeEdm: '制作 EDM',
+                processing: '处理中...',
+                generateEml: '生成 EML 邮件',
+                slicesMode: '上传切片模式',
+                longImageMode: '长图切割模式',
+                mailSubject: '邮件主题',
+                sizeSettings: '尺寸设置',
+                displayWidth: '图片显示宽度 (cm)',
+                uploadAssets: '上传素材',
+                uploadSlices: '上传多张切片文件',
+                uploadLongImage: '上传一张设计长图',
+                sliceToolbox: '切片工具箱',
+                sliceTool: '切片工具',
+                deleteSlice: '删除切片',
+                undo: '撤销',
+                redo: '重做',
+                tips: '提示：',
+                tip1: '1. 支持从图片外的灰色区域开始拖拽绘制。',
+                tip2: '2. 绘制高度将自动锁定并吸附至图片边缘。',
+                tip3: '3. 选区将始终横贯图片左右两侧。',
+                outlookPreview: 'Outlook 发送预览',
+                slicerEditor: '跨边界切片编辑器',
+                waitingAssets: '等待素材上传...',
+                uploadToSlice: '上传长图开始切割',
+                sourceImageAlt: '待切割的长图',
+                defaultSubject: 'Outlook EDM 邮件',
+                languageLabel: 'English'
+            },
+            en: {
+                appName: 'Outlook EDM Maker',
+                makeEdm: 'Create EDM',
+                processing: 'Processing...',
+                generateEml: 'Generate EML',
+                slicesMode: 'Upload Slices',
+                longImageMode: 'Slice Long Image',
+                mailSubject: 'Email Subject',
+                sizeSettings: 'Size Settings',
+                displayWidth: 'Image display width (cm)',
+                uploadAssets: 'Upload Assets',
+                uploadSlices: 'Upload multiple image slices',
+                uploadLongImage: 'Upload one long design image',
+                sliceToolbox: 'Slice Toolbox',
+                sliceTool: 'Slice Tool',
+                deleteSlice: 'Delete Slice',
+                undo: 'Undo',
+                redo: 'Redo',
+                tips: 'Tips:',
+                tip1: '1. You can begin dragging from the gray area outside the image.',
+                tip2: '2. Slice height is constrained and snaps to image or slice edges.',
+                tip3: '3. Every slice always spans the full image width.',
+                outlookPreview: 'Outlook Email Preview',
+                slicerEditor: 'Cross-boundary Slice Editor',
+                waitingAssets: 'Waiting for image assets...',
+                uploadToSlice: 'Upload a long image to start slicing',
+                sourceImageAlt: 'Long image to be sliced',
+                defaultSubject: 'Outlook EDM Email',
+                languageLabel: '中文'
+            }
+        };
+
+        const getInitialLanguage = () => {
+            try {
+                return localStorage.getItem('outlook-edm-language') === 'en' ? 'en' : 'zh';
+            } catch (error) {
+                return 'zh';
+            }
+        };
+
         const App = () => {
+            const [language, setLanguage] = useState(getInitialLanguage);
+            const t = translations[language];
             const [mode, setMode] = useState('slices'); 
             const [images, setImages] = useState([]);
             const [longImage, setLongImage] = useState(null); 
             const [targetWidthCm, setTargetWidthCm] = useState(15);
             const [isExporting, setIsExporting] = useState(false);
-            const [mailInfo, setMailInfo] = useState({ subject: 'Outlook EDM 邮件' });
+            const [mailInfo, setMailInfo] = useState({ subject: translations[language].defaultSubject });
             
             const [editorTool, setEditorTool] = useState('slice'); 
             const [sliceMarkers, setSliceMarkers] = useState([]);
@@ -393,7 +466,28 @@
             const interactionHandlersRef = useRef({ handleMouseMove: null, handleMouseUp: null });
 
             const CM_TO_PX = 37.8; 
-            const SNAP_THRESHOLD = 12; 
+            const SNAP_THRESHOLD = 12;
+
+            useEffect(() => {
+                try {
+                    localStorage.setItem('outlook-edm-language', language);
+                } catch (error) {
+                    // The language still works for this session when storage is unavailable.
+                }
+                document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+                document.title = language === 'zh'
+                    ? 'Outlook EDM 制作专家 v2.3'
+                    : 'Outlook EDM Maker v2.3';
+            }, [language]);
+
+            const switchLanguage = () => {
+                const nextLanguage = language === 'zh' ? 'en' : 'zh';
+                const currentDefault = translations[language].defaultSubject;
+                setMailInfo(prev => ({
+                    subject: prev.subject === currentDefault ? translations[nextLanguage].defaultSubject : prev.subject
+                }));
+                setLanguage(nextLanguage);
+            };
 
             // 拖拽排序处理
             const handleDragStart = (e, index) => {
@@ -912,66 +1006,74 @@
                 <div className="p-4 md:p-8 max-w-7xl mx-auto">
                     <header className="flex flex-col md:flex-row justify-between gap-4 mb-8">
                         <div>
-                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> Outlook EDM 制作专家 <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">v2.3</span></h1>
+                            <h1 className="text-3xl font-bold flex items-center gap-2 text-slate-800"><Icon name="Layout" className="text-blue-600" size={28} /> {t.appName} <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">v2.3</span></h1>
                             <p className="text-slate-500 mt-1 text-sm">Powered by 靳晓楠00491162</p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={switchLanguage}
+                                className="border border-slate-300 bg-white text-slate-600 px-4 py-3 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors"
+                                aria-label={language === 'zh' ? 'Switch to English' : '切换到中文'}
+                            >
+                                {t.languageLabel}
+                            </button>
                             {mode === 'long-image' && longImage && (
                                 <button onClick={makeEdm} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg flex items-center gap-2">
-                                    <Icon name="Check" size={20}/> 制作 EDM
+                                    <Icon name="Check" size={20}/> {t.makeEdm}
                                 </button>
                             )}
                             <button onClick={exportAsEML} disabled={images.length === 0 || isExporting} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95">
-                                <Icon name="Send" size={20}/> {isExporting ? '处理中...' : '生成 EML 邮件'}
+                                <Icon name="Send" size={20}/> {isExporting ? t.processing : t.generateEml}
                             </button>
                         </div>
                     </header>
 
                     <div className="flex bg-white p-1 rounded-xl w-fit shadow-sm border mb-8">
-                        <button onClick={() => setMode('slices')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === 'slices' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><Icon name="Layout" size={16}/> 上传切片模式</button>
-                        <button onClick={() => setMode('long-image')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === 'long-image' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><Icon name="Crop" size={16}/> 长图切割模式</button>
+                        <button onClick={() => setMode('slices')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === 'slices' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><Icon name="Layout" size={16}/> {t.slicesMode}</button>
+                        <button onClick={() => setMode('long-image')} className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === 'long-image' ? 'bg-blue-600 text-white' : 'text-slate-400'}`}><Icon name="Crop" size={16}/> {t.longImageMode}</button>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div className="lg:col-span-4 space-y-6">
                             <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Mail" size={18} className="text-blue-500"/> 邮件主题</h2>
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Mail" size={18} className="text-blue-500"/> {t.mailSubject}</h2>
                                 <input type="text" value={mailInfo.subject} onChange={(e) => setMailInfo({subject: e.target.value})} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"/>
                             </section>
 
                             {mode === 'slices' && (
                                 <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                    <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Settings" size={18} className="text-slate-400"/> 尺寸设置</h2>
-                                    <label className="text-xs text-slate-400 block mb-1">图片显示宽度 (cm)</label>
+                                    <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Settings" size={18} className="text-slate-400"/> {t.sizeSettings}</h2>
+                                    <label className="text-xs text-slate-400 block mb-1">{t.displayWidth}</label>
                                     <input type="number" value={targetWidthCm} onChange={(e) => setTargetWidthCm(e.target.value)} className="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"/>
                                 </section>
                             )}
 
                             <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Upload" size={18} className="text-slate-400"/> 上传素材</h2>
+                                <h2 className="font-bold mb-4 flex items-center gap-2 text-slate-700"><Icon name="Upload" size={18} className="text-slate-400"/> {t.uploadAssets}</h2>
                                 <div className="border-2 border-dashed rounded-xl p-8 text-center relative cursor-pointer hover:bg-slate-50 transition-colors">
                                     <input type="file" multiple={mode === 'slices'} accept="image/*" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
                                     <Icon name="Upload" size={24} className="mx-auto text-blue-500 mb-2"/>
-                                    <p className="text-xs font-semibold text-slate-600">{mode === 'slices' ? '上传多张切片文件' : '上传一张设计长图'}</p>
+                                    <p className="text-xs font-semibold text-slate-600">{mode === 'slices' ? t.uploadSlices : t.uploadLongImage}</p>
                                 </div>
                             </section>
 
                             {mode === 'long-image' && longImage && (
                                 <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">切片工具箱</h3>
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase mb-4">{t.sliceToolbox}</h3>
                                     <div className="grid grid-cols-2 gap-2 mb-4">
-                                        <button onClick={() => setEditorTool('slice')} className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === 'slice' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'text-slate-500'}`}><Icon name="Scissors" size={16}/> 切片工具</button>
-                                        <button onClick={() => setEditorTool('delete')} className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === 'delete' ? 'bg-red-50 border-red-500 text-red-600' : 'text-slate-500'}`}><Icon name="Trash2" size={16}/> 删除切片</button>
+                                        <button onClick={() => setEditorTool('slice')} className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === 'slice' ? 'bg-blue-50 border-blue-500 text-blue-600' : 'text-slate-500'}`}><Icon name="Scissors" size={16}/> {t.sliceTool}</button>
+                                        <button onClick={() => setEditorTool('delete')} className={`flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === 'delete' ? 'bg-red-50 border-red-500 text-red-600' : 'text-slate-500'}`}><Icon name="Trash2" size={16}/> {t.deleteSlice}</button>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button onClick={undo} disabled={history.length === 0} className="flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"><Icon name="Undo" size={14} className="inline mr-1"/>撤销</button>
-                                        <button onClick={redo} disabled={redoStack.length === 0} className="flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"><Icon name="Redo" size={14} className="inline mr-1"/>重做</button>
+                                        <button onClick={undo} disabled={history.length === 0} className="flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"><Icon name="Undo" size={14} className="inline mr-1"/>{t.undo}</button>
+                                        <button onClick={redo} disabled={redoStack.length === 0} className="flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"><Icon name="Redo" size={14} className="inline mr-1"/>{t.redo}</button>
                                     </div>
                                     <p className="text-[10px] text-slate-400 mt-4 leading-relaxed">
-                                        提示：<br/>
-                                        1. 支持从图片外的灰色区域开始拖拽绘制。<br/>
-                                        2. 绘制高度将自动锁定并吸附至图片边缘。<br/>
-                                        3. 选区将始终横贯图片左右两侧。
+                                        {t.tips}<br/>
+                                        {t.tip1}<br/>
+                                        {t.tip2}<br/>
+                                        {t.tip3}
                                     </p>
                                 </section>
                             )}
@@ -980,7 +1082,7 @@
                         <div className="lg:col-span-8 min-w-0">
                             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-w-0 min-h-[750px] flex flex-col">
                                 <div className="bg-slate-50 border-b p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
-                                    <Icon name="Eye" size={12}/> {mode === 'slices' ? 'Outlook 发送预览' : '跨边界切片编辑器'}
+                                    <Icon name="Eye" size={12}/> {mode === 'slices' ? t.outlookPreview : t.slicerEditor}
                                 </div>
                                 
                                 <div 
@@ -1030,7 +1132,7 @@
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Layout" size={64} className="mb-4"/><p>等待素材上传...</p></div>
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Layout" size={64} className="mb-4"/><p>{t.waitingAssets}</p></div>
                                         )
                                     ) : (
                                         longImage ? (
@@ -1044,7 +1146,7 @@
                                                         ref={longImageImgRef}
                                                         src={longImage.data} 
                                                         className="w-full block pointer-events-none" 
-                                                        alt="Source" 
+                                                        alt={t.sourceImageAlt}
                                                     />
                                                     {editorTool === 'slice' && !isDrawing && hoverGuide && (
                                                         <div
@@ -1079,7 +1181,7 @@
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Crop" size={64} className="mb-4"/><p>上传长图开始切割</p></div>
+                                            <div className="flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"><Icon name="Crop" size={64} className="mb-4"/><p>{t.uploadToSlice}</p></div>
                                         )
                                     )}
                                 </div>
