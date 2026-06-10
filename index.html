@@ -193,7 +193,10 @@
             margin: 0 auto;
             max-width: 800px; /* 限制最大宽度 */
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            cursor: crosshair;
         }
+        .ps-slicer-container.is-resizing { cursor: row-resize; }
+        .ps-slicer-container.is-deleting { cursor: pointer; }
         
         .ps-slice {
             position: absolute;
@@ -299,7 +302,35 @@
             border-bottom: 1px dashed #ff9f1a;
             background: rgba(255, 159, 26, 0.1);
             pointer-events: none;
-            z-index: 20;
+            z-index: 30;
+        }
+        .ps-slice-guide {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 0;
+            border-top: 1px dashed rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -1px 0 rgba(37, 99, 235, 0.9);
+            pointer-events: none;
+            z-index: 40;
+        }
+        .ps-slice-guide.is-boundary {
+            border-top-style: solid;
+            border-top-color: #fbbf24;
+            box-shadow: 0 -1px 0 #b45309;
+        }
+        .ps-slice-measure {
+            position: absolute;
+            left: 50%;
+            top: -24px;
+            transform: translateX(-50%);
+            padding: 3px 7px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.92);
+            color: #fff;
+            font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+            white-space: nowrap;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -352,11 +383,14 @@
             const [selectedSliceIds, setSelectedSliceIds] = useState([]);
             const [contextMenu, setContextMenu] = useState(null); // { x, y, visible, disabled }
             const [isPointerLocked, setIsPointerLocked] = useState(false);
+            const [hoverGuide, setHoverGuide] = useState(null); // { y, isBoundary }
 
             const dragItem = useRef(null);
             const dragOverItem = useRef(null);
             const longImageContainerRef = useRef(null); // 图片所在的容器
             const longImageImgRef = useRef(null); // 图片元素本身
+            const suppressNextClickRef = useRef(false);
+            const interactionHandlersRef = useRef({ handleMouseMove: null, handleMouseUp: null });
 
             const CM_TO_PX = 37.8; 
             const SNAP_THRESHOLD = 12; 
@@ -450,9 +484,15 @@
                 e.target.value = '';
             };
 
+            const getSourcePixelThreshold = (screenPixels) => {
+                if (!longImageImgRef.current || !longImage) return screenPixels;
+                const rect = longImageImgRef.current.getBoundingClientRect();
+                return rect.height > 0 ? screenPixels * (longImage.height / rect.height) : screenPixels;
+            };
+
             const findSnapY = (y, markers) => {
                 let bestY = y;
-                let minDelta = SNAP_THRESHOLD;
+                let minDelta = getSourcePixelThreshold(SNAP_THRESHOLD);
                 markers.forEach(m => {
                     if (Math.abs(y - m.yStart) < minDelta) { bestY = m.yStart; minDelta = Math.abs(y - m.yStart); }
                     if (Math.abs(y - m.yEnd) < minDelta) { bestY = m.yEnd; minDelta = Math.abs(y - m.yEnd); }
@@ -490,6 +530,7 @@
                 if (e && !isMouseInImage(e)) return null;
 
                 const sorted = [...sliceMarkers].sort((a,b) => a.yStart - b.yStart);
+                const hitThreshold = getSourcePixelThreshold(8);
                 
                 // 1. 检查相邻切片
                 for (let i = 0; i < sorted.length - 1; i++) {
@@ -497,7 +538,7 @@
                     const lower = sorted[i+1];
                     // 判定相邻：间隙小于 2px
                     if (Math.abs(upper.yEnd - lower.yStart) < 2) {
-                        if (Math.abs(y - upper.yEnd) < 10) {
+                        if (Math.abs(y - upper.yEnd) < hitThreshold) {
                             return { type: 'dual', upper, lower };
                         }
                     }
@@ -508,7 +549,7 @@
                     const slice = sorted[i];
                     
                     // 检查上边缘
-                    if (Math.abs(y - slice.yStart) < 10) {
+                    if (Math.abs(y - slice.yStart) < hitThreshold) {
                         // 确保上方没有紧邻的切片 (如果有，应该已被上面的逻辑捕获，除非有微小误差，这里再校验一次)
                         const prevSlice = sorted[i-1];
                         if (!prevSlice || Math.abs(prevSlice.yEnd - slice.yStart) >= 2) {
@@ -521,7 +562,7 @@
                     }
 
                     // 检查下边缘
-                    if (Math.abs(y - slice.yEnd) < 10) {
+                    if (Math.abs(y - slice.yEnd) < hitThreshold) {
                         // 确保下方没有紧邻的切片
                         const nextSlice = sorted[i+1];
                         if (!nextSlice || Math.abs(slice.yEnd - nextSlice.yStart) >= 2) {
@@ -543,7 +584,7 @@
                 // 如果点击的是右键，不触发绘制或调整，交由 contextmenu 处理
                 if (e.button === 2) return;
 
-                const y = getYFromEvent(e);
+                let y = getYFromEvent(e);
 
                 // 1. 检查是否在调整大小区域 (必须在图片内部)
                 const boundary = findResizeBoundary(y, e);
@@ -554,23 +595,28 @@
                             upperId: boundary.upper.id, 
                             lowerId: boundary.lower.id,
                             upperStart: boundary.upper.yStart, // 用于记录初始状态 (可选)
-                            lowerEnd: boundary.lower.yEnd      // 用于记录初始状态 (可选)
+                            lowerEnd: boundary.lower.yEnd,
+                            initialMarkers: sliceMarkers.map(marker => ({ ...marker }))
                         });
                     } else if (boundary.type === 'top') {
                         setResizeTarget({
                             type: 'top',
                             sliceId: boundary.slice.id,
                             constraintMin: boundary.constraintMin,
-                            constraintMax: boundary.constraintMax
+                            constraintMax: boundary.constraintMax,
+                            initialMarkers: sliceMarkers.map(marker => ({ ...marker }))
                         });
                     } else if (boundary.type === 'bottom') {
                         setResizeTarget({
                             type: 'bottom',
                             sliceId: boundary.slice.id,
                             constraintMin: boundary.constraintMin,
-                            constraintMax: boundary.constraintMax
+                            constraintMax: boundary.constraintMax,
+                            initialMarkers: sliceMarkers.map(marker => ({ ...marker }))
                         });
                     }
+                    suppressNextClickRef.current = true;
+                    setHoverGuide({ y, isBoundary: true });
                     setIsDrawing(false);
                     // 清除上下文菜单
                     setContextMenu(null);
@@ -628,16 +674,20 @@
                 
                 // 初始吸附逻辑
                 let startY = y;
-                if (Math.abs(y - constraint.min) < SNAP_THRESHOLD) startY = constraint.min;
-                else if (Math.abs(y - constraint.max) < SNAP_THRESHOLD) startY = constraint.max;
+                const snapThreshold = getSourcePixelThreshold(SNAP_THRESHOLD);
+                if (Math.abs(y - constraint.min) < snapThreshold) startY = constraint.min;
+                else if (Math.abs(y - constraint.max) < snapThreshold) startY = constraint.max;
                 else startY = findSnapY(y, sliceMarkers);
 
+                suppressNextClickRef.current = true;
+                setHoverGuide(null);
                 setIsDrawing(true);
                 setCurrentDraw({ yStart: startY, yEnd: startY });
             };
 
             const handleSliceClick = (e, sliceId) => {
                 e.stopPropagation(); // 防止冒泡触发背景清除
+                suppressNextClickRef.current = false;
                 if (editorTool === 'delete') {
                     pushHistory(sliceMarkers.filter(s => s.id !== sliceId));
                     return;
@@ -654,6 +704,10 @@
             };
 
             const handleBackgroundClick = () => {
+                if (suppressNextClickRef.current) {
+                    suppressNextClickRef.current = false;
+                    return;
+                }
                 setSelectedSliceIds([]);
                 setContextMenu(null);
             };
@@ -683,12 +737,7 @@
             });
 
             const handleMouseMove = (e) => {
-                // 从 Ref 获取最新状态，或者直接使用当前作用域的状态
-                // 注意：由于此函数每次渲染都会重新定义，所以它可以直接访问当前的 props 和 state。
-                // 但是如果被绑定到 window 上，我们需要确保它能访问到最新的闭包，
-                // 或者我们依赖 useEffect 的清除和重新绑定机制。
-                // 鉴于 React 的性质，我们将利用 useEffect 依赖 [handleMouseMove] 来重新绑定。
-                
+                // 全局监听器通过 ref 始终读取最新交互状态，避免拖动过程中反复重新绑定。
                 const { isDrawing, resizeTarget, longImage, drawConstraint, sliceMarkers } = stateRef.current;
 
                 // 如果正在拖拽或调整大小，拦截默认行为，防止选中文字等
@@ -709,9 +758,10 @@
 
                     // 吸附
                     const snapY = findSnapY(newY, sliceMarkers);
-                    if (Math.abs(newY - snapY) < SNAP_THRESHOLD) newY = snapY;
+                    newY = snapY;
                     
                     setCurrentDraw(prev => ({ ...prev, yEnd: newY }));
+                    setHoverGuide(null);
                 } else if (resizeTarget) {
                     let newY = y;
                     
@@ -733,9 +783,11 @@
                          if (resizeTarget.type === 'dual') return m.id !== resizeTarget.upperId && m.id !== resizeTarget.lowerId;
                          return m.id !== resizeTarget.sliceId;
                     }));
-                    if (Math.abs(newY - snapY) < SNAP_THRESHOLD) newY = snapY;
+                    newY = snapY;
 
                     // 应用调整
+                    setHoverGuide({ y: newY, isBoundary: true });
+
                     if (resizeTarget.type === 'dual') {
                         setSliceMarkers(prev => prev.map(m => {
                             if (m.id === resizeTarget.upperId) return { ...m, yEnd: newY };
@@ -755,11 +807,10 @@
                     // 仅移动鼠标：更新光标样式
                     // 只有在图片内部时才显示调整光标
                     const boundary = findResizeBoundary(y, e);
-                    if (boundary) {
-                        document.body.style.cursor = 'row-resize';
-                    } else {
-                        document.body.style.cursor = '';
-                    }
+                    setHoverGuide({ y: boundary ? (
+                        boundary.type === 'dual' ? boundary.upper.yEnd :
+                        boundary.type === 'top' ? boundary.slice.yStart : boundary.slice.yEnd
+                    ) : y, isBoundary: Boolean(boundary) });
                 }
             };
 
@@ -786,24 +837,30 @@
                 }
                 
                 if (resizeTarget) {
+                    setHistory(prev => [...prev, resizeTarget.initialMarkers]);
+                    setRedoStack([]);
                     setResizeTarget(null);
-                    pushHistory(sliceMarkers); // 记录调整后的历史
                 }
-                
+
+                setHoverGuide(null);
                 document.body.style.cursor = '';
             };
 
-            // 全局事件监听：确保鼠标移出区域后仍能响应
+            interactionHandlersRef.current = { handleMouseMove, handleMouseUp };
+
+            // 全局事件监听：拖动期间只绑定一次，避免每帧重绑造成抖动；移出区域后仍可连续操作
             React.useEffect(() => {
-                if (isDrawing || resizeTarget) {
-                    window.addEventListener('mousemove', handleMouseMove);
-                    window.addEventListener('mouseup', handleMouseUp);
-                    return () => {
-                        window.removeEventListener('mousemove', handleMouseMove);
-                        window.removeEventListener('mouseup', handleMouseUp);
-                    };
-                }
-            }, [isDrawing, resizeTarget, handleMouseMove, handleMouseUp]);
+                if (!isDrawing && !resizeTarget) return;
+
+                const handleGlobalMouseMove = (event) => interactionHandlersRef.current.handleMouseMove(event);
+                const handleGlobalMouseUp = (event) => interactionHandlersRef.current.handleMouseUp(event);
+                window.addEventListener('mousemove', handleGlobalMouseMove);
+                window.addEventListener('mouseup', handleGlobalMouseUp);
+                return () => {
+                    window.removeEventListener('mousemove', handleGlobalMouseMove);
+                    window.removeEventListener('mouseup', handleGlobalMouseUp);
+                };
+            }, [isDrawing, Boolean(resizeTarget)]);
 
             const makeEdm = () => {
                 if (!longImage || sliceMarkers.length === 0) return;
@@ -930,6 +987,7 @@
                                         className={`flex-1 p-8 overflow-auto bg-slate-200/20 ps-slicer-viewport custom-scrollbar ${mode === 'slices' ? 'preview-viewport' : ''}`}
                                         onMouseDown={mode === 'long-image' ? handleMouseDown : undefined}
                                         onMouseMove={mode === 'long-image' && !isDrawing && !resizeTarget ? handleMouseMove : undefined}
+                                        onMouseLeave={() => { if (!isDrawing && !resizeTarget) setHoverGuide(null); }}
                                         onClick={handleBackgroundClick}
                                     >
                                     {mode === 'slices' ? (
@@ -979,7 +1037,7 @@
                                             <div className="flex justify-center">
                                                 <div 
                                                     ref={longImageContainerRef}
-                                                    className="ps-slicer-container shadow-2xl" 
+                                                    className={`ps-slicer-container shadow-2xl ${resizeTarget || hoverGuide?.isBoundary ? 'is-resizing' : ''} ${editorTool === 'delete' ? 'is-deleting' : ''}`}
                                                     style={{ width: '100%', maxWidth: '800px' }}
                                                 >
                                                     <img 
@@ -988,7 +1046,25 @@
                                                         className="w-full block pointer-events-none" 
                                                         alt="Source" 
                                                     />
-                                                    {sliceMarkers.sort((a,b)=>a.yStart-b.yStart).map((m, i) => (
+                                                    {editorTool === 'slice' && !isDrawing && hoverGuide && (
+                                                        <div
+                                                            className={`ps-slice-guide ${hoverGuide.isBoundary ? 'is-boundary' : ''}`}
+                                                            style={{ top: `${(hoverGuide.y / longImage.height) * 100}%` }}
+                                                        >
+                                                            <div className="ps-slice-measure">Y {Math.round(hoverGuide.y)} px</div>
+                                                        </div>
+                                                    )}
+                                                    {isDrawing && currentDraw && (
+                                                        <div
+                                                            className="ps-slice-guide is-boundary"
+                                                            style={{ top: `${(currentDraw.yEnd / longImage.height) * 100}%` }}
+                                                        >
+                                                            <div className="ps-slice-measure">
+                                                                {Math.round(longImage.width)} × {Math.round(Math.abs(currentDraw.yEnd - currentDraw.yStart))} px
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {[...sliceMarkers].sort((a,b)=>a.yStart-b.yStart).map((m, i) => (
                                                         <div key={m.id} 
                                                             className={`ps-slice ${editorTool === 'delete' ? 'deleting' : ''} ${selectedSliceIds.includes(m.id) ? 'selected' : ''}`} 
                                                             style={{ top: `${(m.yStart / longImage.height) * 100}%`, height: `${((m.yEnd - m.yStart) / longImage.height) * 100}%` }} 
