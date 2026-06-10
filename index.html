@@ -157,11 +157,24 @@
     </script>
 
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         .preview-body { background-color: #ffffff; line-height: normal; }
-        .preview-canvas { box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); background: white; }
+        .preview-viewport {
+            min-width: 0;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+        .preview-stage {
+            min-width: 100%;
+            width: max-content;
+        }
+        .preview-canvas {
+            box-sizing: border-box;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            background: white;
+        }
         .edm-table td { line-height: 0; font-size: 0; }
         .edm-table img { display: block; vertical-align: top; }
         
@@ -907,22 +920,25 @@
                             )}
                         </div>
 
-                        <div className="lg:col-span-8">
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[750px] flex flex-col">
+                        <div className="lg:col-span-8 min-w-0">
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-w-0 min-h-[750px] flex flex-col">
                                 <div className="bg-slate-50 border-b p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2">
                                     <Icon name="Eye" size={12}/> {mode === 'slices' ? 'Outlook 发送预览' : '跨边界切片编辑器'}
                                 </div>
                                 
                                 <div 
-                                        className="flex-1 p-8 overflow-auto bg-slate-200/20 ps-slicer-viewport"
+                                        className={`flex-1 p-8 overflow-auto bg-slate-200/20 ps-slicer-viewport custom-scrollbar ${mode === 'slices' ? 'preview-viewport' : ''}`}
                                         onMouseDown={mode === 'long-image' ? handleMouseDown : undefined}
                                         onMouseMove={mode === 'long-image' && !isDrawing && !resizeTarget ? handleMouseMove : undefined}
                                         onClick={handleBackgroundClick}
                                     >
                                     {mode === 'slices' ? (
                                         images.length > 0 ? (
-                                            <div className="flex flex-col items-center">
-                                                <div className="preview-canvas w-full max-w-4xl p-6">
+                                            <div
+                                                className="preview-stage flex flex-col items-center"
+                                                style={{ width: `${Math.round(targetWidthCm * CM_TO_PX) + 48}px` }}
+                                            >
+                                                <div className="preview-canvas w-full p-6">
                                                     <div style={{ fontFamily: 'Calibri', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
                                                     <div style={{ fontFamily: 'Calibri', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
                                                     <div style={{ fontFamily: 'Calibri', fontSize: '11pt', lineHeight: '1.2' }}>&nbsp;</div>
