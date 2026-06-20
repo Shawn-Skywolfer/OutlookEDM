@@ -1,8 +1,16 @@
-# Outlook EDM 制作专家
+# Outlook EDM 制作专家 / Outlook EDM Maker
 
-一个面向 Outlook 邮件场景的浏览器端 EDM 制作工具。它可以将多张图片按顺序组合成邮件，也可以先把一张完整的长图切割成多个切片，再生成包含内嵌图片的 `.eml` 邮件文件。
+[中文说明](#中文说明) · [English Guide](#english-guide)
 
-项目采用单文件前端实现，不需要构建步骤，也不会将上传的图片发送到服务器；图片读取、切片和邮件生成均在当前浏览器中完成。
+---
+
+# 中文说明
+
+## 项目简介
+
+Outlook EDM 制作专家是一款运行在浏览器中的 EDM 邮件制作工具。它支持直接组合多张图片，也支持将一张完整长图切割成多个切片，最后生成可由 Microsoft Outlook 打开的 `.eml` 邮件文件。
+
+项目采用单文件前端实现，无需安装或构建。上传图片的读取、切片、预览和邮件生成均在当前浏览器本地完成，项目不会主动将图片上传到服务器。
 
 ## 主要功能
 
@@ -38,22 +46,22 @@
 - Microsoft Edge
 - Google Chrome
 
-页面启动时需要联网加载以下前端依赖：
+页面启动时需要联网加载：
 
 - Tailwind CSS
 - React 18
 - React DOM 18
 - Babel Standalone
 
-> 上传的图片只在浏览器本地处理，但首次打开页面时需要能够访问项目中配置的 CDN。
+> 图片处理在本地完成，但首次加载页面时必须能够访问 `index.html` 中配置的 CDN。
 
 ## 启动项目
 
-### 方法一：直接打开
+### 直接打开
 
-直接双击 `index.html`，或将其拖入浏览器窗口。
+双击 `index.html`，或将其拖入浏览器窗口。
 
-这种方式适合快速使用。如果浏览器限制本地文件运行脚本，请使用下面的本地服务器方式。
+如果浏览器限制本地文件脚本，请使用本地 HTTP 服务器。
 
 ### 方法一 A：完全离线版本
 
@@ -69,56 +77,52 @@
 python3 -m http.server 8080
 ```
 
-然后在浏览器中访问：
+访问：
 
 ```text
 http://localhost:8080
 ```
 
-### 方法三：使用 Node.js 本地服务器
-
-如果已经安装 Node.js，可以运行：
+### 使用 Node.js
 
 ```bash
 npx serve .
 ```
 
-按照终端输出的地址打开页面即可。
+按照终端显示的地址访问页面。
 
-## 使用方法
+## 切换界面语言
 
-应用提供两种素材处理方式。无论使用哪一种方式，最终都会进入“上传切片模式”完成顺序确认、宽度设置和 EML 导出。
+页面默认显示中文。点击右上角的 **English** 按钮可切换为英文；在英文界面点击 **中文** 可切回中文。
 
----
+- 语言选择会保存在当前浏览器的本地存储中。
+- 下次打开页面时会继续使用上次选择的语言。
+- 如果邮件主题仍为系统默认值，切换语言时默认主题也会同步翻译。
+- 用户自行输入的邮件主题不会因语言切换而被覆盖。
 
-## 方式一：直接上传已经切好的图片
+## 使用方法一：直接上传已切好的图片
 
-适用于设计稿已经被切成多张连续图片的情况。
+适合已经拥有多张连续 EDM 图片切片的情况。
 
 ### 1. 进入上传切片模式
 
-打开页面后，点击顶部的 **“上传切片模式”**。
+点击顶部的 **上传切片模式**。
 
 ### 2. 设置邮件主题
 
-在左侧 **“邮件主题”** 输入框中填写邮件标题。
-
-该内容会同时用于：
-
-- 生成邮件的主题；
-- 下载文件的文件名。
+在左侧 **邮件主题** 输入框中填写标题。该标题会用于邮件主题和下载的 `.eml` 文件名。
 
 ### 3. 设置图片显示宽度
 
-在 **“尺寸设置”** 中输入图片显示宽度，单位为厘米（cm）。默认值为 `15` cm。
+在 **尺寸设置** 中输入图片显示宽度，单位为厘米。默认值为 `15 cm`。
 
-这里设置的是图片在最终 Outlook 邮件中的显示宽度，不会改变原始图片文件。图片高度会根据原图比例自动计算。
+该设置只控制最终邮件中的显示尺寸，不会修改原始文件；图片高度会按照原始宽高比自动计算。
 
-### 4. 上传图片切片
+### 4. 上传图片
 
-点击 **“上传多张切片文件”** 区域，一次选择一张或多张图片。
+点击 **上传多张切片文件**，一次选择一张或多张图片。
 
-建议使用带连续数字的文件名，例如：
+推荐使用连续编号：
 
 ```text
 slice_01.jpg
@@ -126,207 +130,387 @@ slice_02.jpg
 slice_03.jpg
 ```
 
-工具会提取文件名中的第一个数字进行初始排序。没有数字的文件会排在带数字文件之后。
+工具会提取文件名中的第一个数字进行初始排序。未包含数字的文件会排在包含数字的文件之后。
 
-### 5. 检查并调整图片顺序
+### 5. 调整顺序并检查预览
 
-上传后，右侧会显示 Outlook 发送预览：
+在右侧 Outlook 预览中按住图片并拖到目标位置。预览顺序就是最终邮件顺序。
 
-1. 按住某张图片；
-2. 将其拖到目标位置；
-3. 松开鼠标完成排序。
+当目标宽度超过预览区域时，使用预览区底部的横向滚动条查看完整内容。
 
-预览中的排列顺序就是最终邮件中的图片顺序。
+### 6. 生成 EML
 
-当设置的图片宽度超过预览框时，预览区底部会出现横向滚动条，可左右滚动查看完整图片。
+确认主题、宽度和顺序后，点击右上角 **生成 EML 邮件**。浏览器会下载以邮件主题命名的 `.eml` 文件。
 
-### 6. 生成 EML 邮件
+## 使用方法二：上传长图并切割
 
-确认主题、宽度和顺序后，点击右上角 **“生成 EML 邮件”**。
-
-浏览器会下载一个以邮件主题命名的 `.eml` 文件。
-
----
-
-## 方式二：上传长图后进行切割
-
-适用于只有一张完整 EDM 长图、需要在工具中创建切片的情况。
+适合只有一张完整设计长图的情况。
 
 ### 1. 进入长图切割模式
 
-点击顶部的 **“长图切割模式”**。
+点击顶部的 **长图切割模式**。
 
 ### 2. 上传长图
 
-在左侧 **“上传素材”** 区域选择一张图片。长图会显示在右侧切片编辑器中。
-
-当前模式一次只处理一张长图。重新上传会替换当前长图。
+点击左侧 **上传一张设计长图** 并选择图片。该模式一次处理一张长图，重新上传会替换当前图片。
 
 ### 3. 创建切片
 
-确认工具箱中选中的是 **“切片工具”**，然后在图片的未切割区域操作：
+选择 **切片工具**，在尚未被切片占用的纵向区域：
 
-1. 将鼠标移动到希望开始切片的位置；
-2. 按住鼠标左键并向上或向下拖动；
+1. 按住鼠标左键；
+2. 向上或向下拖动；
 3. 松开鼠标完成切片。
 
-创建过程中：
+绘制时：
 
-- 切片会始终横贯图片的完整宽度；
-- 水平参考线会显示当前位置；
-- 尺寸浮层会显示切片的原始像素宽度和高度；
-- 靠近已有切片边界时会自动吸附；
-- 拖动范围会被限制在相邻切片或图片边缘之间；
-- 不允许新切片与已有切片重叠。
+- 切片始终横贯图片完整宽度；
+- 参考线显示当前纵向位置；
+- 浮层显示切片的原始像素宽高；
+- 靠近图片或已有切片边界时自动吸附；
+- 切片不能越过相邻边界，也不能与已有切片重叠；
+- 可以从图片左右两侧的灰色区域开始拖拽。
 
-也可以从图片左右两侧的灰色区域开始拖拽，纵向位置仍会投影到图片范围内。
-
-> 必须在尚未被切片占用的纵向区域开始创建新切片。如果起点位于已有切片内部，本次绘制不会生效。
+如果起点位于已有切片内部，本次绘制不会创建新切片。
 
 ### 4. 调整切片边界
 
-选择 **“切片工具”** 后，将鼠标移动到切片的上边缘或下边缘：
+在 **切片工具** 下，将鼠标移到切片上边缘或下边缘。命中时参考线会高亮，光标会变为纵向调整光标。
 
-- 命中边界时，参考线会高亮，光标会变为纵向调整光标；
-- 按住并上下拖动即可修改边界；
-- 两个切片相邻时，拖动公共边界会同时调整上下两个切片；
+- 拖动公共边界会同时调整相邻的上下两个切片；
 - 独立边缘不会越过相邻切片；
-- 工具会保留切片最小高度，并继续应用边界吸附规则；
-- 即使鼠标移出编辑区域，当前拖动仍可继续，松开后完成调整。
+- 工具会保留最小切片高度；
+- 边界继续应用吸附规则；
+- 鼠标移出编辑区域后仍可继续当前拖动。
 
-### 5. 选择切片
+### 5. 选择和删除切片
 
-- 单击切片：选中当前切片；
-- 按住 `Shift` 单击：将切片加入选择或从选择中移除；
-- 单击图片外的编辑区域：清除当前选择。
+- 单击切片：选择当前切片；
+- `Shift` + 单击：加入或移出多选；
+- 单击编辑区空白位置：清除选择；
+- 选择 **删除切片** 后单击切片：删除该切片。
 
-切片左上角的编号表示其从上到下的顺序。
+切片左上角编号表示从上到下的顺序。
 
-### 6. 删除切片
-
-1. 点击工具箱中的 **“删除切片”**；
-2. 将鼠标移动到需要删除的切片；
-3. 单击切片完成删除。
-
-删除模式下切片会显示为红色提示。
-
-### 7. 撤销和重做
-
-工具箱提供：
+### 6. 撤销和重做
 
 - **撤销**：恢复上一步创建、删除或边界调整；
 - **重做**：重新执行刚刚撤销的操作。
 
-执行新的编辑操作后，原有重做记录会被清空。
+执行新的编辑操作后，已有重做记录会被清空。
 
-### 8. 生成切片并进入邮件预览
+### 7. 制作 EDM
 
-完成切割后，点击页面右上角绿色的 **“制作 EDM”** 按钮，将当前切片生成图片。
+完成切割后，点击右上角绿色的 **制作 EDM** 按钮。工具会：
 
-工具会：
+1. 按从上到下的顺序裁切长图；
+2. 将切片转换为 JPEG 图片；
+3. 自动切换至上传切片模式；
+4. 显示 Outlook 邮件预览。
 
-1. 按切片从上到下的顺序裁切长图；
-2. 将每个切片转换为 JPEG 图片；
-3. 自动切换到 **“上传切片模式”**；
-4. 在 Outlook 发送预览中显示结果。
+随后可继续调整顺序、显示宽度和邮件主题，并生成 EML。
 
-之后可以继续：
-
-- 拖拽调整切片顺序；
-- 设置邮件显示宽度；
-- 修改邮件主题；
-- 点击 **“生成 EML 邮件”** 完成导出。
-
-## 在 Outlook 中使用生成的邮件
+## 在 Outlook 中使用 EML
 
 1. 找到浏览器下载的 `.eml` 文件；
-2. 使用 Microsoft Outlook 打开该文件；
-3. 检查邮件主题、图片显示效果和切片顺序；
-4. 根据需要补充收件人、正文或其他内容；
+2. 使用 Microsoft Outlook 打开；
+3. 检查主题、图片宽度和切片顺序；
+4. 添加收件人或其他正文内容；
 5. 发送邮件。
 
-建议正式发送前，先发送一封测试邮件到不同尺寸的桌面和移动设备，检查：
+正式发送前，建议先向桌面端和移动端测试邮箱发送一封测试邮件，确认图片加载、切片接缝和邮件宽度。
 
-- 图片是否完整加载；
-- 切片之间是否存在缝隙；
-- 邮件宽度是否合适；
-- Outlook 不同版本中的显示效果是否一致。
+## 数据与输出说明
 
-## 数据和输出说明
-
-- 上传图片通过浏览器的 `FileReader` 在本地读取，不会由本项目主动上传到服务器。
-- 长图切片通过浏览器 Canvas 完成。
-- 长图生成的切片使用 JPEG 格式，质量参数为 `0.9`。
-- EML 中的图片通过 CID 作为邮件内嵌资源引用，不依赖远程图片地址。
-- 邮件正文会在图片表格前保留三行空白。
+- 图片通过浏览器 `FileReader` 在本地读取。
+- 长图切片通过 Canvas API 完成。
+- 长图生成的切片为 JPEG，质量参数为 `0.9`。
+- EML 图片通过 CID 内嵌，不依赖远程 URL。
+- 邮件图片表格前会保留三行空白。
+- 图片越多、尺寸越大，生成的 EML 文件也越大。
 
 ## 使用建议
 
-### 图片命名
-
-直接上传切片时，推荐使用补零编号：
-
-```text
-edm_01.jpg
-edm_02.jpg
-edm_03.jpg
-```
-
-这样文件管理和上传后的初始顺序更清晰。
-
-### 切片位置
-
-尽量在以下位置切割：
-
-- 纯色背景；
-- 留白区域；
-- 模块之间的自然分隔处。
-
-避免从文字、按钮、人物面部或复杂渐变中间切开，以减少 Outlook 渲染时切片接缝带来的视觉影响。
-
-### 邮件宽度
-
-`15 cm` 可作为常规桌面邮件的起始值。实际效果与 Outlook 版本、系统缩放和收件设备有关，请以测试邮件为准。
-
-### 图片体积
-
-图片数量多、尺寸大时，生成的 EML 文件也会明显增大。建议在不影响清晰度的前提下，先对素材进行适当压缩。
+- 文件名使用补零编号，例如 `edm_01.jpg`、`edm_02.jpg`。
+- 尽量在纯色、留白或模块分隔处切片。
+- 避免从文字、按钮、人物面部和复杂渐变中间切开。
+- `15 cm` 可作为桌面邮件宽度的起始值，最终效果请以测试邮件为准。
+- 在不影响清晰度的前提下压缩原始图片，以控制 EML 大小。
 
 ## 常见问题
 
 ### 页面一直停留在加载界面
 
-请检查是否可以访问页面依赖的 CDN，并确认浏览器没有拦截脚本。也可以打开浏览器开发者工具查看 Console 和 Network 信息。
+检查网络是否能访问所需 CDN，并查看浏览器 Console 和 Network 面板。
 
-### 上传后图片顺序不正确
+### 图片初始顺序不正确
 
-工具根据文件名中的第一个数字进行初始排序。请检查文件名编号，或直接在右侧预览中拖拽调整顺序。
+检查文件名中的第一个数字，或在预览区直接拖拽调整。
 
-### 无法在某个位置创建切片
+### 无法创建切片
 
-新切片必须从未被已有切片占用的纵向区域开始，并且不能与已有切片重叠。可以先调整或删除附近切片，再重新绘制。
+新切片必须从未被已有切片占用的纵向区域开始，且不能与其他切片重叠。
 
-### 切片边界无法继续拖动
+### 边界无法继续拖动
 
-边界受图片范围、相邻切片位置和最小切片高度限制。这是为了避免切片越界、重叠或高度变为零。
+边界受到图片范围、相邻切片和最小高度约束，这是为了避免越界和重叠。
 
 ### 预览图片超过预览框
 
-当目标显示宽度超过预览区域时，请使用预览区底部的横向滚动条查看完整内容。这不会影响最终导出的邮件宽度。
+使用预览区底部的横向滚动条。这不会改变最终导出的邮件宽度。
 
-### 点击“生成 EML 邮件”没有反应
+### 点击生成 EML 没有反应
 
-请确认已经上传或生成至少一张切片图片，同时检查浏览器是否阻止了文件下载。
+确认至少存在一张切片图片，并检查浏览器是否阻止下载。
 
-## 项目结构
+---
+
+# English Guide
+
+## Overview
+
+Outlook EDM Maker is a browser-based tool for composing image-based EDM emails. You can combine pre-sliced images or divide one long design into horizontal slices, then export the result as an `.eml` file that can be opened in Microsoft Outlook.
+
+The project is implemented as a single front-end file and requires no build step. Image reading, slicing, previewing, and email generation all happen locally in the browser; the application does not upload your images to a server.
+
+## Features
+
+- **Bilingual interface**: switch between Chinese and English with the button in the upper-right corner; the choice is remembered by the browser.
+- **Upload Slices mode**: upload multiple images, sort them automatically, reorder them by dragging, set the email width, and generate an EML file.
+- **Slice Long Image mode**: create, resize, and delete full-width horizontal slices with snapping, measurements, undo, and redo.
+- **Outlook preview**: preview the EDM at its configured width and use horizontal scrolling for oversized content.
+- **EML export**: embed images as CID resources so the generated email does not depend on remote image URLs.
+
+## Requirements
+
+Use a recent desktop browser, preferably:
+
+- Microsoft Edge
+- Google Chrome
+
+The page loads these dependencies from CDNs:
+
+- Tailwind CSS
+- React 18
+- React DOM 18
+- Babel Standalone
+
+> Images are processed locally, but the configured CDNs must be reachable when the page starts.
+
+## Running the Project
+
+### Open the file directly
+
+Double-click `index.html`, or drag it into a browser window.
+
+If the browser restricts scripts loaded from local files, use a local HTTP server instead.
+
+### Run with Python (recommended)
+
+From the project root:
+
+```bash
+python3 -m http.server 8080
+```
+
+Open:
+
+```text
+http://localhost:8080
+```
+
+### Run with Node.js
+
+```bash
+npx serve .
+```
+
+Open the URL printed in the terminal.
+
+## Switching Languages
+
+The interface starts in Chinese by default. Click **English** in the upper-right corner to switch to English, and click **中文** to switch back.
+
+- The selected language is stored in browser local storage.
+- The same language is restored the next time the page opens.
+- If the subject still contains the system default, switching languages also translates that default subject.
+- A subject entered by the user is never overwritten when the language changes.
+
+## Workflow 1: Upload Pre-sliced Images
+
+Use this workflow when your EDM has already been exported as multiple consecutive images.
+
+### 1. Select Upload Slices
+
+Click **Upload Slices** at the top of the page.
+
+### 2. Enter the email subject
+
+Enter a title in **Email Subject**. It is used both as the email subject and as the downloaded `.eml` filename.
+
+### 3. Set the display width
+
+Enter the image width in centimeters under **Size Settings**. The default is `15 cm`.
+
+This changes only the rendered width in the final email. Original files are not resized, and image heights are calculated from their aspect ratios.
+
+### 4. Upload images
+
+Click **Upload multiple image slices** and select one or more files.
+
+Sequential filenames are recommended:
+
+```text
+slice_01.jpg
+slice_02.jpg
+slice_03.jpg
+```
+
+The tool uses the first number in each filename for initial sorting. Files without a number are placed after numbered files.
+
+### 5. Reorder and preview
+
+In the Outlook preview, drag an image to a new position. The preview order is the final email order.
+
+If the configured width is larger than the preview panel, use the horizontal scrollbar at the bottom of the preview.
+
+### 6. Generate the EML file
+
+After confirming the subject, width, and order, click **Generate EML**. The browser downloads an `.eml` file named after the email subject.
+
+## Workflow 2: Slice a Long Image
+
+Use this workflow when you have one complete long-form design.
+
+### 1. Select Slice Long Image
+
+Click **Slice Long Image** at the top of the page.
+
+### 2. Upload the design
+
+Click **Upload one long design image** and select an image. This mode handles one long image at a time; uploading again replaces the current image.
+
+### 3. Create slices
+
+Select **Slice Tool**, then start in a vertical region that is not already occupied by another slice:
+
+1. Hold the left mouse button;
+2. Drag upward or downward;
+3. Release to create the slice.
+
+While drawing:
+
+- Every slice spans the full image width;
+- A guide shows the current vertical position;
+- A measurement label shows the source-pixel width and height;
+- The edge snaps near image and existing slice boundaries;
+- The range is constrained by neighboring slices and image edges;
+- New slices cannot overlap existing slices;
+- You may begin dragging from the gray area to either side of the image.
+
+Starting inside an existing slice does not create a new slice.
+
+### 4. Resize slice boundaries
+
+With **Slice Tool** active, move the pointer near the top or bottom edge of a slice. The guide highlights and the cursor changes when an edge can be resized.
+
+- Dragging a shared boundary resizes both adjacent slices;
+- An independent edge cannot cross a neighboring slice;
+- Minimum slice height is preserved;
+- Snapping continues to apply during resizing;
+- The active drag continues even if the pointer leaves the editor area.
+
+### 5. Select and delete slices
+
+- Click a slice to select it;
+- `Shift` + click adds or removes it from the selection;
+- Click blank editor space to clear the selection;
+- Activate **Delete Slice**, then click a slice to remove it.
+
+The number in the upper-left corner of each slice indicates its top-to-bottom order.
+
+### 6. Undo and redo
+
+- **Undo** restores the previous create, delete, or resize operation;
+- **Redo** reapplies the most recently undone operation.
+
+Performing a new edit clears the redo history.
+
+### 7. Create the EDM
+
+When slicing is complete, click the green **Create EDM** button. The application will:
+
+1. Crop the long image from top to bottom;
+2. Convert each slice to JPEG;
+3. Switch automatically to Upload Slices mode;
+4. Display the Outlook email preview.
+
+You can then reorder slices, change the display width or subject, and generate the EML file.
+
+## Using the EML File in Outlook
+
+1. Locate the downloaded `.eml` file;
+2. Open it with Microsoft Outlook;
+3. Verify the subject, image width, and slice order;
+4. Add recipients or additional email content;
+5. Send the message.
+
+Before a production send, send a test message to desktop and mobile mailboxes to verify image loading, slice seams, and overall width.
+
+## Data and Output Details
+
+- Images are read locally with the browser `FileReader` API.
+- Long-image slicing uses the Canvas API.
+- Generated long-image slices are JPEG files with a quality value of `0.9`.
+- EML images are embedded with CID references and do not require remote URLs.
+- Three blank lines are inserted before the image table in the email body.
+- More or larger images produce a larger EML file.
+
+## Recommendations
+
+- Use zero-padded filenames such as `edm_01.jpg` and `edm_02.jpg`.
+- Place slice boundaries in solid-color, whitespace, or natural module-separation areas.
+- Avoid slicing through text, buttons, faces, or complex gradients.
+- Use `15 cm` as a starting desktop email width and validate it with test emails.
+- Compress source images when possible to keep the EML file size manageable.
+
+## Troubleshooting
+
+### The page remains on the loading screen
+
+Verify that the required CDNs are reachable and inspect the browser Console and Network panels.
+
+### Images are initially in the wrong order
+
+Check the first number in each filename, or reorder the images directly in the preview.
+
+### A new slice cannot be created
+
+The drag must begin in a vertical area that is not occupied by an existing slice, and slices cannot overlap.
+
+### A boundary stops moving
+
+Boundaries are constrained by the image edges, neighboring slices, and the minimum slice height.
+
+### The preview is wider than the panel
+
+Use the horizontal scrollbar at the bottom of the preview. This does not change the exported email width.
+
+### Generate EML does nothing
+
+Make sure at least one image slice exists and verify that the browser is not blocking downloads.
+
+---
+
+## 项目结构 / Project Structure
 
 ```text
 OutlookEDM/
-├── index.html   # 页面、样式和全部应用逻辑
-└── README.md    # 项目说明和使用文档
+├── index.html   # 页面、样式与应用逻辑 / UI, styles, and application logic
+└── README.md    # 中英双语文档 / Bilingual documentation
 ```
 
-## 技术说明
+## 技术栈 / Technology
 
 - HTML5
 - CSS / Tailwind CSS
@@ -336,4 +520,6 @@ OutlookEDM/
 - FileReader API
 - Blob / Object URL
 
-本项目没有安装依赖、编译或打包步骤，核心功能均位于 `index.html` 中。
+无需安装依赖、编译或打包。所有核心功能均位于 `index.html` 中。
+
+No dependency installation, compilation, or bundling is required. All core functionality is contained in `index.html`.
