@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlook EDM 制作专家 / Outlook EDM Maker v2.4 Offline</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f8fafc;color:#0f172a;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-4{margin-bottom:1rem}.mb-8{margin-bottom:2rem}.mt-1{margin-top:.25rem}.mt-4{margin-top:1rem}.mr-1{margin-right:.25rem}.mx-auto{margin-left:auto;margin-right:auto}.max-w-7xl{max-width:80rem}.w-full{width:100%}.w-fit{width:fit-content}.h-full{height:100%}.min-h-\[750px\]{min-height:750px}.min-w-0{min-width:0}.block{display:block}.inline{display:inline}.flex{display:flex}.grid{display:grid}.hidden{display:none}.flex-1{flex:1 1 0%}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:.5rem}.gap-4{gap:1rem}.gap-8{gap:2rem}.space-y-6>*+*{margin-top:1.5rem}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.rounded{border-radius:.25rem}.rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.border{border:1px solid #e2e8f0}.border-b{border-bottom:1px solid #e2e8f0}.border-2{border-width:2px}.border-dashed{border-style:dashed}.border-slate-200{border-color:#e2e8f0}.border-blue-500{border-color:#3b82f6}.border-red-500{border-color:#ef4444}.bg-white{background:#fff}.bg-slate-50{background:#f8fafc}.bg-slate-800{background:#1e293b}.bg-slate-200\/20{background:rgba(226,232,240,.2)}.bg-blue-50{background:#eff6ff}.bg-blue-100{background:#dbeafe}.bg-blue-600{background:#2563eb}.bg-green-600{background:#16a34a}.bg-red-50{background:#fef2f2}.bg-gradient-to-r{background-image:linear-gradient(to right,var(--tw-gradient-from,#2563eb),var(--tw-gradient-to,#4f46e5))}.from-blue-600{--tw-gradient-from:#2563eb}.to-indigo-600{--tw-gradient-to:#4f46e5}.text-white{color:white}.text-slate-300{color:#cbd5e1}.text-slate-400{color:#94a3b8}.text-slate-500{color:#64748b}.text-slate-600{color:#475569}.text-slate-700{color:#334155}.text-slate-800{color:#1e293b}.text-slate-900{color:#0f172a}.text-blue-500{color:#3b82f6}.text-blue-600{color:#2563eb}.text-red-600{color:#dc2626}.text-xs{font-size:.75rem;line-height:1rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-\[10px\]{font-size:10px}.font-bold{font-weight:700}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tracking-widest{letter-spacing:.1em}.leading-relaxed{line-height:1.625}.text-center{text-align:center}.shadow-sm{box-shadow:0 1px 2px rgba(0,0,0,.05)}.shadow-lg{box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1)}.shadow-2xl{box-shadow:0 25px 50px -12px rgba(0,0,0,.25)}.overflow-hidden{overflow:hidden}.overflow-auto{overflow:auto}.relative{position:relative}.absolute{position:absolute}.inset-0{inset:0}.opacity-0{opacity:0}.opacity-30{opacity:.3}.opacity-50{opacity:.5}.cursor-pointer{cursor:pointer}.cursor-move{cursor:move}.pointer-events-none{pointer-events:none}.transition-all{transition:all .15s ease}.transition-colors{transition:color .15s ease,background-color .15s ease}.outline-none{outline:0}.disabled\:opacity-30:disabled{opacity:.3}.disabled\:opacity-50:disabled{opacity:.5}.hover\:bg-slate-50:hover{background:#f8fafc}.hover\:bg-slate-100:hover{background:#f1f5f9}.hover\:bg-green-700:hover{background:#15803d}.active\:scale-95:active{transform:scale(.95)}.focus\:ring-2:focus{box-shadow:0 0 0 2px #3b82f6}.focus\:ring-blue-500:focus{box-shadow:0 0 0 2px #3b82f6}input{font:inherit}button{font:inherit;border:0;cursor:pointer}button:disabled{cursor:not-allowed}@media (min-width:768px){.md\:p-8{padding:2rem}.md\:flex-row{flex-direction:row}}@media (min-width:1024px){.lg\:grid-cols-12{grid-template-columns:repeat(12,minmax(0,1fr))}.lg\:col-span-4{grid-column:span 4/span 4}.lg\:col-span-8{grid-column:span 8/span 8}}
+
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .preview-body { background-color: #ffffff; line-height: normal; }
+        .preview-viewport {
+            min-width: 0;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+        .preview-stage {
+            min-width: 100%;
+            width: max-content;
+        }
+        .preview-canvas {
+            box-sizing: border-box;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            background: white;
+        }
+        .edm-table td { line-height: 0; font-size: 0; }
+        .edm-table img { display: block; vertical-align: top; }
+        
+        /* PS 风格切片编辑器 */
+        .ps-slicer-viewport {
+            position: relative;
+            cursor: crosshair;
+            min-height: 100%;
+            padding: 2rem 4rem; /* 增加内边距 */
+        }
+        
+        .ps-slicer-container {
+            position: relative;
+            user-select: none;
+            background: #f1f5f9;
+            margin: 0 auto;
+            max-width: 800px; /* 限制最大宽度 */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            cursor: crosshair;
+        }
+        .ps-slicer-container.is-resizing { cursor: row-resize; }
+        .ps-slicer-container.is-deleting { cursor: pointer; }
+        
+        .ps-slice {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border: 1px solid #00a8ff;
+            background: rgba(0, 168, 255, 0.08);
+            pointer-events: auto;
+            transition: background 0.1s;
+        }
+        .ps-slice:hover {
+            background: rgba(255, 159, 26, 0.15);
+            border-color: #ff9f1a;
+        }
+        .ps-slice.deleting {
+            background: rgba(239, 68, 68, 0.2) !important;
+            border-color: #ef4444 !important;
+            cursor: pointer;
+        }
+
+        .ps-slice-tag {
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            background: #00a8ff;
+            color: white;
+            font-size: 9px;
+            padding: 0px 4px;
+            height: 14px;
+            line-height: 14px;
+            font-family: sans-serif;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .ps-slice:hover .ps-slice-tag { background: #ff9f1a; }
+        .ps-slice.deleting .ps-slice-tag { background: #ef4444; }
+
+        .ps-slice.selected {
+            border: 2px solid #2563eb;
+            background: rgba(37, 99, 235, 0.1);
+            z-index: 20;
+        }
+
+        .preview-image-selected {
+            box-shadow: 0 0 0 3px #2563eb;
+            z-index: 10;
+            position: relative;
+        }
+
+        .preview-image-unselected {
+            border: 3px dashed #ff9f1a;
+            box-sizing: border-box;
+        }
+
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border-radius: 8px;
+            padding: 4px;
+            z-index: 100;
+            min-width: 120px;
+        }
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #334155;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.1s;
+        }
+        .context-menu-item:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+        .context-menu-item.danger {
+            color: #ef4444;
+        }
+        .context-menu-item.danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .context-menu-item.disabled {
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .context-menu-item.disabled:hover {
+            background: transparent;
+            color: #94a3b8;
+        }
+
+        /* 绘制中的全宽虚线反馈 */
+        .ps-drawing-overlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #ff9f1a;
+            border-bottom: 1px dashed #ff9f1a;
+            background: rgba(255, 159, 26, 0.1);
+            pointer-events: none;
+            z-index: 30;
+        }
+        .ps-slice-guide {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 0;
+            border-top: 1px dashed rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -1px 0 rgba(37, 99, 235, 0.9);
+            pointer-events: none;
+            z-index: 40;
+        }
+        .ps-slice-guide.is-boundary {
+            border-top-style: solid;
+            border-top-color: #fbbf24;
+            box-shadow: 0 -1px 0 #b45309;
+        }
+        .ps-slice-measure {
+            position: absolute;
+            left: 50%;
+            top: -24px;
+            transform: translateX(-50%);
+            padding: 3px 7px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.92);
+            color: #fff;
+            font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans">
+<div id="root"></div>
+<script>(function () {
+  const Fragment = Symbol('Fragment');
+  const hookStore = new Map();
+  let currentHooks = null;
+  let hookIndex = 0;
+  let rootContainer = null;
+  let rootVNode = null;
+  let pendingEffects = [];
+  let scheduled = false;
+
+  const isText = (value) => typeof value === 'string' || typeof value === 'number';
+  const flatten = (items, out = []) => {
+    items.forEach((item) => {
+      if (Array.isArray(item)) flatten(item, out);
+      else if (item !== null && item !== undefined && item !== false && item !== true) out.push(item);
+    });
+    return out;
+  };
+
+  function createElement(type, props, ...children) {
+    return { type, props: props || {}, children: flatten(children) };
+  }
+
+  function sameDeps(a, b) {
+    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => Object.is(v, b[i]));
+  }
+
+  function useState(initialValue) {
+    const hooks = currentHooks;
+    const index = hookIndex++;
+    if (!(index in hooks.state)) hooks.state[index] = typeof initialValue === 'function' ? initialValue() : initialValue;
+    const setState = (nextValue) => {
+      const next = typeof nextValue === 'function' ? nextValue(hooks.state[index]) : nextValue;
+      if (!Object.is(next, hooks.state[index])) {
+        hooks.state[index] = next;
+        scheduleRender();
+      }
+    };
+    return [hooks.state[index], setState];
+  }
+
+  function useRef(initialValue) {
+    const hooks = currentHooks;
+    const index = hookIndex++;
+    if (!(index in hooks.state)) hooks.state[index] = { current: initialValue };
+    return hooks.state[index];
+  }
+
+  function useEffect(effect, deps) {
+    const hooks = currentHooks;
+    const index = hookIndex++;
+    const prev = hooks.effects[index];
+    if (!prev || !sameDeps(prev.deps, deps)) {
+      pendingEffects.push(() => {
+        if (prev && typeof prev.cleanup === 'function') prev.cleanup();
+        const cleanup = effect();
+        hooks.effects[index] = { deps, cleanup };
+      });
+    }
+  }
+
+  function useCallback(callback, deps) {
+    const hooks = currentHooks;
+    const index = hookIndex++;
+    const prev = hooks.state[index];
+    if (!prev || !sameDeps(prev.deps, deps)) {
+      hooks.state[index] = { deps, callback };
+    }
+    return hooks.state[index].callback;
+  }
+
+  function setProps(node, props) {
+    Object.entries(props || {}).forEach(([key, value]) => {
+      if (key === 'children' || value === null || value === undefined || value === false) return;
+      if (key === 'className') node.setAttribute('class', value);
+      else if (key === 'htmlFor') node.setAttribute('for', value);
+      else if (key === 'style' && typeof value === 'object') Object.assign(node.style, value);
+      else if (key.startsWith('on') && typeof value === 'function') node.addEventListener(key.slice(2).toLowerCase(), value);
+      else if (key === 'ref' && value && typeof value === 'object') value.current = node;
+      else if (key === 'aria-pressed') node.setAttribute('aria-pressed', String(value));
+      else if (key === 'disabled' || key === 'multiple' || key === 'draggable') {
+        if (value) node.setAttribute(key, '');
+      } else node.setAttribute(key, String(value));
+    });
+  }
+
+  function renderVNode(vnode, path) {
+    if (isText(vnode)) return document.createTextNode(String(vnode));
+    if (!vnode) return document.createTextNode('');
+    if (typeof vnode.type === 'function') {
+      const previousHooks = currentHooks;
+      const previousIndex = hookIndex;
+      const key = path;
+      const hooks = hookStore.get(key) || { state: [], effects: [] };
+      hookStore.set(key, hooks);
+      currentHooks = hooks;
+      hookIndex = 0;
+      const rendered = vnode.type({ ...(vnode.props || {}), children: vnode.children });
+      currentHooks = previousHooks;
+      hookIndex = previousIndex;
+      return renderVNode(rendered, path + '.0');
+    }
+    if (vnode.type === Fragment) {
+      const frag = document.createDocumentFragment();
+      vnode.children.forEach((child, i) => frag.appendChild(renderVNode(child, `${path}.${i}`)));
+      return frag;
+    }
+    const node = document.createElementNS(vnode.type === 'svg' || path.includes('svg') ? 'http://www.w3.org/2000/svg' : 'http://www.w3.org/1999/xhtml', vnode.type);
+    setProps(node, vnode.props);
+    vnode.children.forEach((child, i) => node.appendChild(renderVNode(child, `${path}.${vnode.type}.${i}`)));
+    return node;
+  }
+
+  function getElementPath(node) {
+    if (!rootContainer || !node || !rootContainer.contains(node)) return null;
+    const path = [];
+    let cursor = node;
+    while (cursor && cursor !== rootContainer) {
+      const parent = cursor.parentNode;
+      if (!parent) return null;
+      path.unshift(Array.prototype.indexOf.call(parent.childNodes, cursor));
+      cursor = parent;
+    }
+    return path;
+  }
+
+  function getElementByPath(path) {
+    if (!path) return null;
+    return path.reduce((node, index) => node && node.childNodes[index], rootContainer);
+  }
+
+  function doRender() {
+    if (!rootContainer || !rootVNode) return;
+    const activePath = getElementPath(document.activeElement);
+    const selectionStart = document.activeElement && 'selectionStart' in document.activeElement ? document.activeElement.selectionStart : null;
+    const selectionEnd = document.activeElement && 'selectionEnd' in document.activeElement ? document.activeElement.selectionEnd : null;
+    pendingEffects = [];
+    rootContainer.replaceChildren(renderVNode(rootVNode, 'root'));
+    const restored = getElementByPath(activePath);
+    if (restored && typeof restored.focus === 'function') {
+      restored.focus();
+      if (selectionStart !== null && 'setSelectionRange' in restored) restored.setSelectionRange(selectionStart, selectionEnd);
+    }
+    const effects = pendingEffects;
+    pendingEffects = [];
+    effects.forEach((run) => setTimeout(run, 0));
+  }
+
+  function scheduleRender() {
+    if (scheduled) return;
+    scheduled = true;
+    setTimeout(() => {
+      scheduled = false;
+      doRender();
+    }, 0);
+  }
+
+  window.React = { createElement, Fragment, useState, useRef, useEffect, useCallback };
+  window.ReactDOM = {
+    createRoot(container) {
+      return {
+        render(vnode) {
+          rootContainer = container;
+          rootVNode = vnode;
+          doRender();
+        }
+      };
+    }
+  };
+})();
+</script>
+<script>// ../../tmp/app.jsx
+var { useState, useRef, useEffect, useCallback } = React;
+var Icon = ({ name, size = 18, className = "" }) => {
+  const icons = {
+    Upload: /* @__PURE__ */ React.createElement("path", {
+      d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+    }),
+    Trash2: /* @__PURE__ */ React.createElement("path", {
+      d: "M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6"
+    }),
+    Layout: /* @__PURE__ */ React.createElement("path", {
+      d: "M3 3h18v18H3zM3 9h18M9 21V9"
+    }),
+    Eye: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", {
+      d: "M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"
+    }), /* @__PURE__ */ React.createElement("circle", {
+      cx: "12",
+      cy: "12",
+      r: "3"
+    })),
+    Settings: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", {
+      d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+    }), /* @__PURE__ */ React.createElement("circle", {
+      cx: "12",
+      cy: "12",
+      r: "3"
+    })),
+    Mail: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("rect", {
+      width: "20",
+      height: "16",
+      x: "2",
+      y: "4",
+      rx: "2"
+    }), /* @__PURE__ */ React.createElement("path", {
+      d: "m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"
+    })),
+    Send: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("path", {
+      d: "m22 2-7 20-4-9-9-4Z"
+    }), /* @__PURE__ */ React.createElement("path", {
+      d: "M22 2 11 13"
+    })),
+    Scissors: /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("circle", {
+      cx: "6",
+      cy: "6",
+      r: "3"
+    }), /* @__PURE__ */ React.createElement("circle", {
+      cx: "6",
+      cy: "18",
+      r: "3"
+    }), /* @__PURE__ */ React.createElement("path", {
+      d: "M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"
+    })),
+    Undo: /* @__PURE__ */ React.createElement("path", {
+      d: "M3 7V2h5M2 2l4.9 4.9C8.3 5.4 10 4.5 12 4.5c4.1 0 7.5 3.4 7.5 7.5s-3.4 7.5-7.5 7.5c-2.8 0-5.3-1.5-6.6-3.8"
+    }),
+    Redo: /* @__PURE__ */ React.createElement("path", {
+      d: "M21 7V2h-5M22 2l-4.9 4.9c-1.4-1.5-3.1-2.4-5.1-2.4-4.1 0-7.5 3.4-7.5 7.5s3.4 7.5 7.5 7.5c2.8 0 5.3-1.5 6.6-3.8"
+    }),
+    Crop: /* @__PURE__ */ React.createElement("path", {
+      d: "M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"
+    }),
+    Check: /* @__PURE__ */ React.createElement("path", {
+      d: "M20 6 9 17l-5-5"
+    }),
+    MoveVertical: /* @__PURE__ */ React.createElement("path", {
+      d: "m8 18 4 4 4-4M8 6l4-4 4 4M12 2v20"
+    })
+  };
+  return /* @__PURE__ */ React.createElement("svg", {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: size,
+    height: size,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className
+  }, icons[name] || null);
+};
+var translations = {
+  zh: {
+    appName: "Outlook EDM 制作专家",
+    documentTitle: "Outlook EDM 制作专家 v2.4 - 中英双语版",
+    defaultSubject: "Outlook EDM 邮件",
+    makeEdm: "制作 EDM",
+    processing: "处理中...",
+    exportEml: "生成 EML 邮件",
+    slicesMode: "上传切片模式",
+    longImageMode: "长图切割模式",
+    mailSubject: "邮件主题",
+    sizeSettings: "尺寸设置",
+    imageWidth: "图片显示宽度 (cm)",
+    uploadAssets: "上传素材",
+    uploadSlices: "上传多张切片文件",
+    uploadLongImage: "上传一张设计长图",
+    sliceToolbox: "切片工具箱",
+    sliceTool: "切片工具",
+    deleteSlice: "删除切片",
+    undo: "撤销",
+    redo: "重做",
+    tips: "提示：",
+    tipOutside: "1. 支持从图片外的灰色区域开始拖拽绘制。",
+    tipSnap: "2. 绘制高度将自动锁定并吸附至图片边缘。",
+    tipFullWidth: "3. 选区将始终横贯图片左右两侧。",
+    outlookPreview: "Outlook 发送预览",
+    slicerEditor: "跨边界切片编辑器",
+    waitingUpload: "等待素材上传...",
+    startSlicing: "上传长图开始切割",
+    sourceImageAlt: "待切割的源图片",
+    language: "语言",
+    switchToChinese: "切换为中文",
+    switchToEnglish: "Switch to English"
+  },
+  en: {
+    appName: "Outlook EDM Maker",
+    documentTitle: "Outlook EDM Maker v2.4 - Bilingual Edition",
+    defaultSubject: "Outlook EDM Email",
+    makeEdm: "Create EDM",
+    processing: "Processing...",
+    exportEml: "Generate EML Email",
+    slicesMode: "Upload Slices",
+    longImageMode: "Slice Long Image",
+    mailSubject: "Email Subject",
+    sizeSettings: "Size Settings",
+    imageWidth: "Image display width (cm)",
+    uploadAssets: "Upload Assets",
+    uploadSlices: "Upload multiple image slices",
+    uploadLongImage: "Upload one long design image",
+    sliceToolbox: "Slice Toolbox",
+    sliceTool: "Slice Tool",
+    deleteSlice: "Delete Slice",
+    undo: "Undo",
+    redo: "Redo",
+    tips: "Tips:",
+    tipOutside: "1. Start dragging from the gray area outside the image.",
+    tipSnap: "2. Slice height locks automatically and snaps to image edges.",
+    tipFullWidth: "3. Every selection spans the full width of the image.",
+    outlookPreview: "Outlook Email Preview",
+    slicerEditor: "Cross-boundary Slice Editor",
+    waitingUpload: "Waiting for assets...",
+    startSlicing: "Upload a long image to start slicing",
+    sourceImageAlt: "Source image to be sliced",
+    language: "Language",
+    switchToChinese: "切换为中文",
+    switchToEnglish: "Switch to English"
+  }
+};
+var getInitialLanguage = () => {
+  const savedLanguage = localStorage.getItem("outlook-edm-language");
+  if (savedLanguage === "zh" || savedLanguage === "en")
+    return savedLanguage;
+  return navigator.language.toLowerCase().startsWith("zh") ? "zh" : "en";
+};
+var App = () => {
+  const [language, setLanguage] = useState(getInitialLanguage);
+  const t = translations[language];
+  const [mode, setMode] = useState("slices");
+  const [images, setImages] = useState([]);
+  const [longImage, setLongImage] = useState(null);
+  const [targetWidthCm, setTargetWidthCm] = useState(15);
+  const [isExporting, setIsExporting] = useState(false);
+  const [mailInfo, setMailInfo] = useState({ subject: translations[getInitialLanguage()].defaultSubject });
+  const [editorTool, setEditorTool] = useState("slice");
+  const [sliceMarkers, setSliceMarkers] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentDraw, setCurrentDraw] = useState(null);
+  const [drawConstraint, setDrawConstraint] = useState({ min: 0, max: 0 });
+  const [resizeTarget, setResizeTarget] = useState(null);
+  const [selectedSliceIds, setSelectedSliceIds] = useState([]);
+  const [contextMenu, setContextMenu] = useState(null);
+  const [isPointerLocked, setIsPointerLocked] = useState(false);
+  const [hoverGuide, setHoverGuide] = useState(null);
+  const dragItem = useRef(null);
+  const dragOverItem = useRef(null);
+  const longImageContainerRef = useRef(null);
+  const longImageImgRef = useRef(null);
+  const suppressNextClickRef = useRef(false);
+  const interactionHandlersRef = useRef({ handleMouseMove: null, handleMouseUp: null });
+  const CM_TO_PX = 37.8;
+  const SNAP_THRESHOLD = 12;
+  useEffect(() => {
+    localStorage.setItem("outlook-edm-language", language);
+    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+    document.title = t.documentTitle;
+    setMailInfo((current) => {
+      const otherLanguage = language === "zh" ? "en" : "zh";
+      return current.subject === translations[otherLanguage].defaultSubject ? { subject: t.defaultSubject } : current;
+    });
+  }, [language]);
+  const handleDragStart = (e, index) => {
+    dragItem.current = index;
+    e.dataTransfer.effectAllowed = "move";
+    setSelectedSliceIds([images[index].id]);
+  };
+  const handleDragEnter = (e, index) => {
+    const dragIndex = dragItem.current;
+    if (dragIndex === null || dragIndex === index)
+      return;
+    const newImages = [...images];
+    const draggedImage = newImages[dragIndex];
+    newImages.splice(dragIndex, 1);
+    newImages.splice(index, 0, draggedImage);
+    setImages(newImages);
+    dragItem.current = index;
+  };
+  const handleDragEnd = () => {
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+  const pushHistory = useCallback((newMarkers) => {
+    setHistory((prev) => [...prev, sliceMarkers]);
+    setSliceMarkers(newMarkers);
+    setRedoStack([]);
+  }, [sliceMarkers]);
+  const undo = () => {
+    if (history.length === 0)
+      return;
+    const prev = history[history.length - 1];
+    setRedoStack((p) => [...p, sliceMarkers]);
+    setSliceMarkers(prev);
+    setHistory(history.slice(0, -1));
+  };
+  const redo = () => {
+    if (redoStack.length === 0)
+      return;
+    const next = redoStack[redoStack.length - 1];
+    setHistory((p) => [...p, sliceMarkers]);
+    setSliceMarkers(next);
+    setRedoStack(redoStack.slice(0, -1));
+  };
+  const handleFileUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0)
+      return;
+    if (mode === "slices") {
+      const promises = files.map((file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader;
+          reader.onload = (event) => {
+            const img = new Image;
+            img.onload = () => {
+              resolve({
+                id: Math.random().toString(36).substr(2, 9),
+                file,
+                name: file.name,
+                cid: `${file.name.replace(/[^a-zA-Z0-9]/g, "_")}@edm.maker`,
+                preview: event.target.result,
+                width: img.width,
+                height: img.height,
+                aspectRatio: img.height / img.width,
+                order: parseInt(file.name.match(/\d+/)?.[0] || 999)
+              });
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+      Promise.all(promises).then((res) => setImages((prev) => [...prev, ...res].sort((a, b) => a.order - b.order)));
+    } else {
+      const file = files[0];
+      const reader = new FileReader;
+      reader.onload = (event) => {
+        const img = new Image;
+        img.onload = () => setLongImage({ data: event.target.result, width: img.width, height: img.height, fileName: file.name });
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    e.target.value = "";
+  };
+  const getSourcePixelThreshold = (screenPixels) => {
+    if (!longImageImgRef.current || !longImage)
+      return screenPixels;
+    const rect = longImageImgRef.current.getBoundingClientRect();
+    return rect.height > 0 ? screenPixels * (longImage.height / rect.height) : screenPixels;
+  };
+  const findSnapY = (y, markers) => {
+    let bestY = y;
+    let minDelta = getSourcePixelThreshold(SNAP_THRESHOLD);
+    markers.forEach((m) => {
+      if (Math.abs(y - m.yStart) < minDelta) {
+        bestY = m.yStart;
+        minDelta = Math.abs(y - m.yStart);
+      }
+      if (Math.abs(y - m.yEnd) < minDelta) {
+        bestY = m.yEnd;
+        minDelta = Math.abs(y - m.yEnd);
+      }
+    });
+    return bestY;
+  };
+  const getYFromEvent = (e) => {
+    if (!longImageImgRef.current)
+      return 0;
+    const rect = longImageImgRef.current.getBoundingClientRect();
+    const scale = longImage.height / rect.height;
+    const rawY = (e.clientY - rect.top) * scale;
+    if (isDrawing || resizeTarget) {
+      if (rawY < 0)
+        return 0;
+      if (rawY > longImage.height)
+        return longImage.height;
+    }
+    return Math.max(0, Math.min(rawY, longImage.height));
+  };
+  const isMouseInImage = (e) => {
+    if (!longImageImgRef.current)
+      return false;
+    const rect = longImageImgRef.current.getBoundingClientRect();
+    return e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+  };
+  const findResizeBoundary = (y, e) => {
+    if (e && !isMouseInImage(e))
+      return null;
+    const sorted = [...sliceMarkers].sort((a, b) => a.yStart - b.yStart);
+    const hitThreshold = getSourcePixelThreshold(8);
+    for (let i = 0;i < sorted.length - 1; i++) {
+      const upper = sorted[i];
+      const lower = sorted[i + 1];
+      if (Math.abs(upper.yEnd - lower.yStart) < 2) {
+        if (Math.abs(y - upper.yEnd) < hitThreshold) {
+          return { type: "dual", upper, lower };
+        }
+      }
+    }
+    for (let i = 0;i < sorted.length; i++) {
+      const slice = sorted[i];
+      if (Math.abs(y - slice.yStart) < hitThreshold) {
+        const prevSlice = sorted[i - 1];
+        if (!prevSlice || Math.abs(prevSlice.yEnd - slice.yStart) >= 2) {
+          const constraintMin = prevSlice ? prevSlice.yEnd : 0;
+          const constraintMax = slice.yEnd - 5;
+          return { type: "top", slice, constraintMin, constraintMax };
+        }
+      }
+      if (Math.abs(y - slice.yEnd) < hitThreshold) {
+        const nextSlice = sorted[i + 1];
+        if (!nextSlice || Math.abs(slice.yEnd - nextSlice.yStart) >= 2) {
+          const constraintMin = slice.yStart + 5;
+          const constraintMax = nextSlice ? nextSlice.yStart : longImage.height;
+          return { type: "bottom", slice, constraintMin, constraintMax };
+        }
+      }
+    }
+    return null;
+  };
+  const handleMouseDown = (e) => {
+    if (editorTool !== "slice" || !longImage)
+      return;
+    if (e.button === 2)
+      return;
+    let y = getYFromEvent(e);
+    const boundary = findResizeBoundary(y, e);
+    if (boundary) {
+      if (boundary.type === "dual") {
+        setResizeTarget({
+          type: "dual",
+          upperId: boundary.upper.id,
+          lowerId: boundary.lower.id,
+          upperStart: boundary.upper.yStart,
+          lowerEnd: boundary.lower.yEnd,
+          initialMarkers: sliceMarkers.map((marker) => ({ ...marker }))
+        });
+      } else if (boundary.type === "top") {
+        setResizeTarget({
+          type: "top",
+          sliceId: boundary.slice.id,
+          constraintMin: boundary.constraintMin,
+          constraintMax: boundary.constraintMax,
+          initialMarkers: sliceMarkers.map((marker) => ({ ...marker }))
+        });
+      } else if (boundary.type === "bottom") {
+        setResizeTarget({
+          type: "bottom",
+          sliceId: boundary.slice.id,
+          constraintMin: boundary.constraintMin,
+          constraintMax: boundary.constraintMax,
+          initialMarkers: sliceMarkers.map((marker) => ({ ...marker }))
+        });
+      }
+      suppressNextClickRef.current = true;
+      setHoverGuide({ y, isBoundary: true });
+      setIsDrawing(false);
+      setContextMenu(null);
+      return;
+    }
+    const clickedSlice = sliceMarkers.find((m) => y > m.yStart && y < m.yEnd);
+    if (!e.shiftKey) {}
+    const sorted = [...sliceMarkers].sort((a, b) => a.yStart - b.yStart);
+    const parentSlice = sorted.find((m) => y > m.yStart && y < m.yEnd);
+    if (parentSlice) {
+      return;
+    }
+    if (!isMouseInImage(e)) {
+      const coveredSlice = sorted.find((m) => y > m.yStart && y < m.yEnd);
+      if (coveredSlice) {
+        return;
+      }
+    }
+    let constraint = { min: 0, max: longImage.height };
+    let min = 0;
+    let max = longImage.height;
+    for (let m of sorted) {
+      if (m.yEnd <= y)
+        min = Math.max(min, m.yEnd);
+      if (m.yStart >= y)
+        max = Math.min(max, m.yStart);
+    }
+    constraint = { min, max };
+    if (y < min)
+      y = min;
+    if (y > max)
+      y = max;
+    setDrawConstraint(constraint);
+    let startY = y;
+    const snapThreshold = getSourcePixelThreshold(SNAP_THRESHOLD);
+    if (Math.abs(y - constraint.min) < snapThreshold)
+      startY = constraint.min;
+    else if (Math.abs(y - constraint.max) < snapThreshold)
+      startY = constraint.max;
+    else
+      startY = findSnapY(y, sliceMarkers);
+    suppressNextClickRef.current = true;
+    setHoverGuide(null);
+    setIsDrawing(true);
+    setCurrentDraw({ yStart: startY, yEnd: startY });
+  };
+  const handleSliceClick = (e, sliceId) => {
+    e.stopPropagation();
+    suppressNextClickRef.current = false;
+    if (editorTool === "delete") {
+      pushHistory(sliceMarkers.filter((s) => s.id !== sliceId));
+      return;
+    }
+    if (e.shiftKey) {
+      setSelectedSliceIds((prev) => {
+        if (prev.includes(sliceId))
+          return prev.filter((id) => id !== sliceId);
+        return [...prev, sliceId];
+      });
+    } else {
+      setSelectedSliceIds([sliceId]);
+    }
+  };
+  const handleBackgroundClick = () => {
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false;
+      return;
+    }
+    setSelectedSliceIds([]);
+    setContextMenu(null);
+  };
+  const stateRef = React.useRef({
+    sliceMarkers: [],
+    longImage: null,
+    drawConstraint: null,
+    currentDraw: null,
+    isDrawing: false,
+    resizeTarget: null
+  });
+  React.useEffect(() => {
+    stateRef.current = {
+      sliceMarkers,
+      longImage,
+      drawConstraint,
+      currentDraw,
+      isDrawing,
+      resizeTarget
+    };
+  });
+  const handleMouseMove = (e) => {
+    const { isDrawing: isDrawing2, resizeTarget: resizeTarget2, longImage: longImage2, drawConstraint: drawConstraint2, sliceMarkers: sliceMarkers2 } = stateRef.current;
+    if (isDrawing2 || resizeTarget2) {
+      e.preventDefault();
+    }
+    if (!longImage2)
+      return;
+    const y = getYFromEvent(e);
+    if (isDrawing2) {
+      let newY = y;
+      if (newY < drawConstraint2.min)
+        newY = drawConstraint2.min;
+      if (newY > drawConstraint2.max)
+        newY = drawConstraint2.max;
+      const snapY = findSnapY(newY, sliceMarkers2);
+      newY = snapY;
+      setCurrentDraw((prev) => ({ ...prev, yEnd: newY }));
+      setHoverGuide(null);
+    } else if (resizeTarget2) {
+      let newY = y;
+      if (resizeTarget2.type === "dual") {
+        const upperMin = resizeTarget2.upperStart + 5;
+        const lowerMax = resizeTarget2.lowerEnd - 5;
+        if (newY < upperMin)
+          newY = upperMin;
+        if (newY > lowerMax)
+          newY = lowerMax;
+      } else {
+        if (newY < resizeTarget2.constraintMin)
+          newY = resizeTarget2.constraintMin;
+        if (newY > resizeTarget2.constraintMax)
+          newY = resizeTarget2.constraintMax;
+      }
+      const snapY = findSnapY(newY, sliceMarkers2.filter((m) => {
+        if (resizeTarget2.type === "dual")
+          return m.id !== resizeTarget2.upperId && m.id !== resizeTarget2.lowerId;
+        return m.id !== resizeTarget2.sliceId;
+      }));
+      newY = snapY;
+      setHoverGuide({ y: newY, isBoundary: true });
+      if (resizeTarget2.type === "dual") {
+        setSliceMarkers((prev) => prev.map((m) => {
+          if (m.id === resizeTarget2.upperId)
+            return { ...m, yEnd: newY };
+          if (m.id === resizeTarget2.lowerId)
+            return { ...m, yStart: newY };
+          return m;
+        }));
+      } else if (resizeTarget2.type === "top") {
+        setSliceMarkers((prev) => prev.map((m) => m.id === resizeTarget2.sliceId ? { ...m, yStart: newY } : m));
+      } else if (resizeTarget2.type === "bottom") {
+        setSliceMarkers((prev) => prev.map((m) => m.id === resizeTarget2.sliceId ? { ...m, yEnd: newY } : m));
+      }
+    } else {
+      const boundary = findResizeBoundary(y, e);
+      setHoverGuide({ y: boundary ? boundary.type === "dual" ? boundary.upper.yEnd : boundary.type === "top" ? boundary.slice.yStart : boundary.slice.yEnd : y, isBoundary: Boolean(boundary) });
+    }
+  };
+  const handleMouseUp = () => {
+    const { isDrawing: isDrawing2, currentDraw: currentDraw2, resizeTarget: resizeTarget2, sliceMarkers: sliceMarkers2 } = stateRef.current;
+    if (isDrawing2) {
+      setIsDrawing(false);
+      if (currentDraw2 && Math.abs(currentDraw2.yStart - currentDraw2.yEnd) > 2) {
+        const newSlice = {
+          id: Math.random().toString(36).substr(2, 9),
+          yStart: Math.min(currentDraw2.yStart, currentDraw2.yEnd),
+          yEnd: Math.max(currentDraw2.yStart, currentDraw2.yEnd)
+        };
+        pushHistory([...sliceMarkers2, newSlice]);
+        setSelectedSliceIds([newSlice.id]);
+      }
+      setCurrentDraw(null);
+    }
+    if (resizeTarget2) {
+      setHistory((prev) => [...prev, resizeTarget2.initialMarkers]);
+      setRedoStack([]);
+      setResizeTarget(null);
+    }
+    setHoverGuide(null);
+    document.body.style.cursor = "";
+  };
+  interactionHandlersRef.current = { handleMouseMove, handleMouseUp };
+  React.useEffect(() => {
+    if (!isDrawing && !resizeTarget)
+      return;
+    const handleGlobalMouseMove = (event) => interactionHandlersRef.current.handleMouseMove(event);
+    const handleGlobalMouseUp = (event) => interactionHandlersRef.current.handleMouseUp(event);
+    window.addEventListener("mousemove", handleGlobalMouseMove);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleGlobalMouseMove);
+      window.removeEventListener("mouseup", handleGlobalMouseUp);
+    };
+  }, [isDrawing, Boolean(resizeTarget)]);
+  const makeEdm = () => {
+    if (!longImage || sliceMarkers.length === 0)
+      return;
+    const sorted = [...sliceMarkers].sort((a, b) => a.yStart - b.yStart);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const img = new Image;
+    img.onload = () => {
+      const newImgs = sorted.map((m, i) => {
+        const w = longImage.width, h = m.yEnd - m.yStart;
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(img, 0, m.yStart, w, h, 0, 0, w, h);
+        return {
+          id: Math.random().toString(36).substr(2, 9),
+          name: `slice_${i + 1}.jpg`,
+          cid: `slice_${i + 1}@edm.maker`,
+          preview: canvas.toDataURL("image/jpeg", 0.9),
+          aspectRatio: h / w,
+          order: i,
+          file: { type: "image/jpeg" }
+        };
+      });
+      setImages(newImgs);
+      setMode("slices");
+    };
+    img.src = longImage.data;
+  };
+  const exportAsEML = () => {
+    if (images.length === 0)
+      return;
+    setIsExporting(true);
+    const targetWidthPx = Math.round(targetWidthCm * CM_TO_PX);
+    const spacers = '<div style="font-family: Calibri; font-size: 11pt; line-height: 1.2;">&nbsp;</div>'.repeat(3);
+    const tableRows = images.map((img) => `<tr><td align="center" style="padding:0;line-height:0;font-size:0;"><img src="cid:${img.cid}" width="${targetWidthPx}" height="${Math.round(targetWidthPx * img.aspectRatio)}" style="display:block;border:0;width:${targetWidthPx}px;vertical-align:top;"></td></tr>`).join("");
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#ffffff;">${spacers}<table border="0" cellpadding="0" cellspacing="0" width="${targetWidthPx}" align="center" style="border-collapse:collapse;margin:0 auto;table-layout:fixed;">${tableRows}</table></body></html>`;
+    const boundary = "boundary_" + Date.now();
+    const encodedHTML = btoa(unescape(encodeURIComponent(html))).match(/.{1,76}/g).join(`\r
+`);
+    let eml = [`Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(mailInfo.subject)))}?=`, "MIME-Version: 1.0", `Content-Type: multipart/related; boundary="${boundary}"`, "X-Unsent: 1", "", `--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: base64", "", encodedHTML, ""];
+    images.forEach((img) => {
+      eml.push(`--${boundary}`, `Content-Type: image/jpeg`, "Content-Transfer-Encoding: base64", `Content-ID: <${img.cid}>`, `Content-Disposition: inline; filename="${img.name}"`, "", img.preview.split(",")[1].match(/.{1,76}/g).join(`\r
+`), "");
+    });
+    eml.push(`--${boundary}--`);
+    const blob = new Blob([eml.join(`\r
+`)], { type: "message/rfc822" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${mailInfo.subject}.eml`;
+    a.click();
+    setIsExporting(false);
+  };
+  return /* @__PURE__ */ React.createElement("div", {
+    className: "p-4 md:p-8 max-w-7xl mx-auto"
+  }, /* @__PURE__ */ React.createElement("header", {
+    className: "flex flex-col md:flex-row justify-between gap-4 mb-8"
+  }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h1", {
+    className: "text-3xl font-bold flex items-center gap-2 text-slate-800"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Layout",
+    className: "text-blue-600",
+    size: 28
+  }), " ", t.appName, " ", /* @__PURE__ */ React.createElement("span", {
+    className: "text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded"
+  }, "v2.4")), /* @__PURE__ */ React.createElement("p", {
+    className: "text-slate-500 mt-1 text-sm"
+  }, "Powered by 靳晓楠00491162")), /* @__PURE__ */ React.createElement("div", {
+    className: "flex flex-wrap items-center gap-2"
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm",
+    role: "group",
+    "aria-label": t.language
+  }, /* @__PURE__ */ React.createElement("button", {
+    type: "button",
+    onClick: () => setLanguage("zh"),
+    "aria-pressed": language === "zh",
+    title: t.switchToChinese,
+    className: `rounded-lg px-3 py-2 text-sm font-bold transition-colors ${language === "zh" ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-100"}`
+  }, "中文"), /* @__PURE__ */ React.createElement("button", {
+    type: "button",
+    onClick: () => setLanguage("en"),
+    "aria-pressed": language === "en",
+    title: t.switchToEnglish,
+    className: `rounded-lg px-3 py-2 text-sm font-bold transition-colors ${language === "en" ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-100"}`
+  }, "EN")), mode === "long-image" && longImage && /* @__PURE__ */ React.createElement("button", {
+    onClick: makeEdm,
+    className: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg flex items-center gap-2"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Check",
+    size: 20
+  }), " ", t.makeEdm), /* @__PURE__ */ React.createElement("button", {
+    onClick: exportAsEML,
+    disabled: images.length === 0 || isExporting,
+    className: "bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg disabled:opacity-50 flex items-center gap-2 transition-all active:scale-95"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Send",
+    size: 20
+  }), " ", isExporting ? t.processing : t.exportEml))), /* @__PURE__ */ React.createElement("div", {
+    className: "flex bg-white p-1 rounded-xl w-fit shadow-sm border mb-8"
+  }, /* @__PURE__ */ React.createElement("button", {
+    onClick: () => setMode("slices"),
+    className: `px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === "slices" ? "bg-blue-600 text-white" : "text-slate-400"}`
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Layout",
+    size: 16
+  }), " ", t.slicesMode), /* @__PURE__ */ React.createElement("button", {
+    onClick: () => setMode("long-image"),
+    className: `px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all ${mode === "long-image" ? "bg-blue-600 text-white" : "text-slate-400"}`
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Crop",
+    size: 16
+  }), " ", t.longImageMode)), /* @__PURE__ */ React.createElement("div", {
+    className: "grid grid-cols-1 lg:grid-cols-12 gap-8"
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "lg:col-span-4 space-y-6"
+  }, /* @__PURE__ */ React.createElement("section", {
+    className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-200"
+  }, /* @__PURE__ */ React.createElement("h2", {
+    className: "font-bold mb-4 flex items-center gap-2 text-slate-700"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Mail",
+    size: 18,
+    className: "text-blue-500"
+  }), " ", t.mailSubject), /* @__PURE__ */ React.createElement("input", {
+    type: "text",
+    value: mailInfo.subject,
+    onChange: (e) => setMailInfo({ subject: e.target.value }),
+    className: "w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+  })), mode === "slices" && /* @__PURE__ */ React.createElement("section", {
+    className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-200"
+  }, /* @__PURE__ */ React.createElement("h2", {
+    className: "font-bold mb-4 flex items-center gap-2 text-slate-700"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Settings",
+    size: 18,
+    className: "text-slate-400"
+  }), " ", t.sizeSettings), /* @__PURE__ */ React.createElement("label", {
+    className: "text-xs text-slate-400 block mb-1"
+  }, t.imageWidth), /* @__PURE__ */ React.createElement("input", {
+    type: "number",
+    value: targetWidthCm,
+    onChange: (e) => setTargetWidthCm(e.target.value),
+    className: "w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+  })), /* @__PURE__ */ React.createElement("section", {
+    className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-200"
+  }, /* @__PURE__ */ React.createElement("h2", {
+    className: "font-bold mb-4 flex items-center gap-2 text-slate-700"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Upload",
+    size: 18,
+    className: "text-slate-400"
+  }), " ", t.uploadAssets), /* @__PURE__ */ React.createElement("div", {
+    className: "border-2 border-dashed rounded-xl p-8 text-center relative cursor-pointer hover:bg-slate-50 transition-colors"
+  }, /* @__PURE__ */ React.createElement("input", {
+    type: "file",
+    multiple: mode === "slices",
+    accept: "image/*",
+    onChange: handleFileUpload,
+    className: "absolute inset-0 opacity-0 cursor-pointer"
+  }), /* @__PURE__ */ React.createElement(Icon, {
+    name: "Upload",
+    size: 24,
+    className: "mx-auto text-blue-500 mb-2"
+  }), /* @__PURE__ */ React.createElement("p", {
+    className: "text-xs font-semibold text-slate-600"
+  }, mode === "slices" ? t.uploadSlices : t.uploadLongImage))), mode === "long-image" && longImage && /* @__PURE__ */ React.createElement("section", {
+    className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-200"
+  }, /* @__PURE__ */ React.createElement("h3", {
+    className: "text-xs font-bold text-slate-400 uppercase mb-4"
+  }, t.sliceToolbox), /* @__PURE__ */ React.createElement("div", {
+    className: "grid grid-cols-2 gap-2 mb-4"
+  }, /* @__PURE__ */ React.createElement("button", {
+    onClick: () => setEditorTool("slice"),
+    className: `flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === "slice" ? "bg-blue-50 border-blue-500 text-blue-600" : "text-slate-500"}`
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Scissors",
+    size: 16
+  }), " ", t.sliceTool), /* @__PURE__ */ React.createElement("button", {
+    onClick: () => setEditorTool("delete"),
+    className: `flex items-center justify-center gap-2 p-2 rounded-lg border text-sm font-bold ${editorTool === "delete" ? "bg-red-50 border-red-500 text-red-600" : "text-slate-500"}`
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Trash2",
+    size: 16
+  }), " ", t.deleteSlice)), /* @__PURE__ */ React.createElement("div", {
+    className: "flex gap-2"
+  }, /* @__PURE__ */ React.createElement("button", {
+    onClick: undo,
+    disabled: history.length === 0,
+    className: "flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Undo",
+    size: 14,
+    className: "inline mr-1"
+  }), t.undo), /* @__PURE__ */ React.createElement("button", {
+    onClick: redo,
+    disabled: redoStack.length === 0,
+    className: "flex-1 border p-2 rounded-lg text-xs font-bold disabled:opacity-30"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Redo",
+    size: 14,
+    className: "inline mr-1"
+  }), t.redo)), /* @__PURE__ */ React.createElement("p", {
+    className: "text-[10px] text-slate-400 mt-4 leading-relaxed"
+  }, t.tips, /* @__PURE__ */ React.createElement("br", null), t.tipOutside, /* @__PURE__ */ React.createElement("br", null), t.tipSnap, /* @__PURE__ */ React.createElement("br", null), t.tipFullWidth))), /* @__PURE__ */ React.createElement("div", {
+    className: "lg:col-span-8 min-w-0"
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-w-0 min-h-[750px] flex flex-col"
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "bg-slate-50 border-b p-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-2"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Eye",
+    size: 12
+  }), " ", mode === "slices" ? t.outlookPreview : t.slicerEditor), /* @__PURE__ */ React.createElement("div", {
+    className: `flex-1 p-8 overflow-auto bg-slate-200/20 ps-slicer-viewport custom-scrollbar ${mode === "slices" ? "preview-viewport" : ""}`,
+    onMouseDown: mode === "long-image" ? handleMouseDown : undefined,
+    onMouseMove: mode === "long-image" && !isDrawing && !resizeTarget ? handleMouseMove : undefined,
+    onMouseLeave: () => {
+      if (!isDrawing && !resizeTarget)
+        setHoverGuide(null);
+    },
+    onClick: handleBackgroundClick
+  }, mode === "slices" ? images.length > 0 ? /* @__PURE__ */ React.createElement("div", {
+    className: "preview-stage flex flex-col items-center",
+    style: { width: `${Math.round(targetWidthCm * CM_TO_PX) + 48}px` }
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "preview-canvas w-full p-6"
+  }, /* @__PURE__ */ React.createElement("div", {
+    style: { fontFamily: "Calibri", fontSize: "11pt", lineHeight: "1.2" }
+  }, " "), /* @__PURE__ */ React.createElement("div", {
+    style: { fontFamily: "Calibri", fontSize: "11pt", lineHeight: "1.2" }
+  }, " "), /* @__PURE__ */ React.createElement("div", {
+    style: { fontFamily: "Calibri", fontSize: "11pt", lineHeight: "1.2" }
+  }, " "), /* @__PURE__ */ React.createElement("table", {
+    border: "0",
+    cellpadding: "0",
+    cellspacing: "0",
+    align: "center",
+    style: { borderCollapse: "collapse", margin: "0 auto", width: `${Math.round(targetWidthCm * CM_TO_PX)}px` }
+  }, /* @__PURE__ */ React.createElement("tbody", null, images.map((img, index) => /* @__PURE__ */ React.createElement("tr", {
+    key: img.id,
+    draggable: true,
+    onDragStart: (e) => handleDragStart(e, index),
+    onDragEnter: (e) => handleDragEnter(e, index),
+    onDragEnd: handleDragEnd,
+    onDragOver: (e) => e.preventDefault(),
+    onClick: (e) => {
+      e.stopPropagation();
+      setSelectedSliceIds([img.id]);
+    },
+    style: { cursor: "move", transition: "all 0.2s" }
+  }, /* @__PURE__ */ React.createElement("td", {
+    align: "center",
+    style: { padding: 0, lineHeight: 0, fontSize: 0, position: "relative" }
+  }, /* @__PURE__ */ React.createElement("img", {
+    src: img.preview,
+    style: { display: "block", width: "100%", border: 0 }
+  }), /* @__PURE__ */ React.createElement("div", {
+    className: selectedSliceIds.includes(img.id) ? "preview-image-selected" : selectedSliceIds.length > 0 ? "preview-image-unselected" : "",
+    style: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", pointerEvents: "none" }
+  })))))))) : /* @__PURE__ */ React.createElement("div", {
+    className: "flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Layout",
+    size: 64,
+    className: "mb-4"
+  }), /* @__PURE__ */ React.createElement("p", null, t.waitingUpload)) : longImage ? /* @__PURE__ */ React.createElement("div", {
+    className: "flex justify-center"
+  }, /* @__PURE__ */ React.createElement("div", {
+    ref: longImageContainerRef,
+    className: `ps-slicer-container shadow-2xl ${resizeTarget || hoverGuide?.isBoundary ? "is-resizing" : ""} ${editorTool === "delete" ? "is-deleting" : ""}`,
+    style: { width: "100%", maxWidth: "800px" }
+  }, /* @__PURE__ */ React.createElement("img", {
+    ref: longImageImgRef,
+    src: longImage.data,
+    className: "w-full block pointer-events-none",
+    alt: t.sourceImageAlt
+  }), editorTool === "slice" && !isDrawing && hoverGuide && /* @__PURE__ */ React.createElement("div", {
+    className: `ps-slice-guide ${hoverGuide.isBoundary ? "is-boundary" : ""}`,
+    style: { top: `${hoverGuide.y / longImage.height * 100}%` }
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "ps-slice-measure"
+  }, "Y ", Math.round(hoverGuide.y), " px")), isDrawing && currentDraw && /* @__PURE__ */ React.createElement("div", {
+    className: "ps-slice-guide is-boundary",
+    style: { top: `${currentDraw.yEnd / longImage.height * 100}%` }
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "ps-slice-measure"
+  }, Math.round(longImage.width), " × ", Math.round(Math.abs(currentDraw.yEnd - currentDraw.yStart)), " px")), [...sliceMarkers].sort((a, b) => a.yStart - b.yStart).map((m, i) => /* @__PURE__ */ React.createElement("div", {
+    key: m.id,
+    className: `ps-slice ${editorTool === "delete" ? "deleting" : ""} ${selectedSliceIds.includes(m.id) ? "selected" : ""}`,
+    style: { top: `${m.yStart / longImage.height * 100}%`, height: `${(m.yEnd - m.yStart) / longImage.height * 100}%` },
+    onClick: (e) => handleSliceClick(e, m.id)
+  }, /* @__PURE__ */ React.createElement("div", {
+    className: "ps-slice-tag"
+  }, (i + 1).toString().padStart(2, "0")))), isDrawing && currentDraw && /* @__PURE__ */ React.createElement("div", {
+    className: "ps-drawing-overlay",
+    style: { top: `${Math.min(currentDraw.yStart, currentDraw.yEnd) / longImage.height * 100}%`, height: `${Math.abs(currentDraw.yEnd - currentDraw.yStart) / longImage.height * 100}%` }
+  }))) : /* @__PURE__ */ React.createElement("div", {
+    className: "flex flex-col items-center justify-center h-full text-slate-300 opacity-30 pointer-events-none"
+  }, /* @__PURE__ */ React.createElement(Icon, {
+    name: "Crop",
+    size: 64,
+    className: "mb-4"
+  }), /* @__PURE__ */ React.createElement("p", null, t.startSlicing)))))));
+};
+var root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(/* @__PURE__ */ React.createElement(App, null));
+</script>
+</body>
+</html>

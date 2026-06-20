@@ -6,6 +6,12 @@
 
 ## 主要功能
 
+- **中英双语界面 / Bilingual interface**
+  - 点击页面右上角的 `中文 / EN` 可随时切换界面语言。
+  - Use the `中文 / EN` control in the upper-right corner to switch languages at any time.
+  - 语言偏好会保存在浏览器中，并在下次打开时自动恢复。
+  - Your language preference is saved in the browser and restored on your next visit.
+
 - **上传切片模式**
   - 一次上传多张图片。
   - 根据文件名中的数字自动进行初始排序。
@@ -48,6 +54,12 @@
 直接双击 `index.html`，或将其拖入浏览器窗口。
 
 这种方式适合快速使用。如果浏览器限制本地文件运行脚本，请使用下面的本地服务器方式。
+
+### 方法一 A：完全离线版本
+
+如果需要在没有外网、无法访问 CDN 的环境中完整使用工具，请直接打开仓库中的 `offline.html`。
+
+`offline.html` 是一个独立文件，已经内置运行所需的脚本和样式，不会在页面运行时加载 Tailwind CSS、React、React DOM 或 Babel CDN。
 
 ### 方法二：使用 Python 本地服务器（推荐）
 
