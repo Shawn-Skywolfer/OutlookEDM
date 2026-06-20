@@ -63,7 +63,13 @@ Outlook EDM 制作专家是一款运行在浏览器中的 EDM 邮件制作工具
 
 如果浏览器限制本地文件脚本，请使用本地 HTTP 服务器。
 
-### 使用 Python（推荐）
+### 方法一 A：完全离线版本
+
+如果需要在没有外网、无法访问 CDN 的环境中完整使用工具，请直接打开仓库中的 `offline.html`。
+
+`offline.html` 是一个独立文件，已经内置运行所需的脚本和样式，不会在页面运行时加载 Tailwind CSS、React、React DOM 或 Babel CDN。
+
+### 方法二：使用 Python 本地服务器（推荐）
 
 在项目根目录运行：
 
